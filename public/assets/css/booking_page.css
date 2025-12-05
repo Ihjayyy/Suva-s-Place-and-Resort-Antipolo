@@ -1,0 +1,368 @@
+body {
+    background-attachment: fixed;
+    min-height: 100vh;
+    position: relative;
+    color: var(--third-color);
+    line-height: 1.6;
+    background-color: var(--first-color);
+}
+
+.hero {
+  position: relative;
+  height: 60vh;
+  background: url("../images/booking-header.png") center/cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--first-color);
+  border-radius: 0px 0px 300px 300px;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 0px 0px 300px 300px;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+}
+
+.hero h1 {
+  font-size: 5rem;
+  font-weight: 600;
+}
+
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><path d="M14 16H9v-2h5V9.87a4 4 0 1 1 2 0V14h5v2h-5v15.95A10 10 0 0 0 23.66 27l-3.46-2 8.2-2.2-2.9 5a12 12 0 0 1-21 0l-2.89-5 8.2 2.2-3.47 2A10 10 0 0 0 14 31.95V16zm40 40h-5v-2h5v-4.13a4 4 0 1 1 2 0V54h5v2h-5v15.95A10 10 0 0 0 63.66 67l-3.47-2 8.2-2.2-2.88 5a12 12 0 0 1-21.02 0l-2.88-5 8.2 2.2-3.47 2A10 10 0 0 0 54 71.95V56zm-39 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm40-40a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM15 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm40 40a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" fill="rgba(255,255,255,0.05)"/></svg>');
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+}
+
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+/* ===================================
+   CONTAINER & LAYOUT
+   =================================== */
+.container {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* ===================================
+   HEADER SECTION
+   =================================== */
+.header {
+    padding: 40px 30px;
+    border-radius: 20px 20px 0 0;
+    text-align: center;
+}
+
+.header h1 {
+    font-size: 2.5em;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tagline {
+    font-size: 1.1em;
+    font-weight: 300;
+}
+
+/* ===================================
+   FORM STYLES
+   =================================== */
+
+.form-section {
+    margin-bottom: 40px;
+    padding-bottom: 30px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+}
+
+.section-title {
+    font-size: 1.5em;
+    margin-bottom: 25px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-title::before {
+    content: '';
+    width: 4px;
+    height: 30px;
+    background: var(--third-color);
+    border-radius: 2px;
+}
+
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #444;
+    font-size: 0.95em;
+}
+
+.required {
+    color: #e74c3c;
+    font-weight: 700;
+}
+
+
+.form-group input[type="text"],
+.form-group input[type="tel"],
+.form-group input[type="date"],
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    background: #fafafa;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--third-color);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+
+@media (max-width: 600px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===================================
+   BOOKING POLICY SECTION
+   =================================== */
+.policy-section {
+    background: var(--third-color);
+    color: var(--first-color);
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+}
+
+.policy-content ol {
+    margin-left: 20px;
+    margin-bottom: 20px;
+}
+
+.policy-content li {
+    margin-bottom: 12px;
+    line-height: 1.8;
+}
+
+
+.policy-agreement {
+    margin-top: 15px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--second-color);
+}
+
+/* ===================================
+   BUTTONS
+   =================================== */
+.form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.booking-btn-primary,
+.booking-btn-secondary {
+    padding: 15px 40px;
+    font-size: 1.1em;
+    font-weight: 600;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.booking-btn-primary {
+    background-color: var(--third-color);
+    color: var(--first-color);
+    transition: 0.5s ease-in-out;
+}
+
+.booking-btn-primary:hover {
+    background-color: var(--second-color);
+    color: var(--third-color);
+}
+
+.booking-btn-primary:active {
+    transform: translateY(0);
+}
+
+.booking-btn-secondary {
+    background-color: var(--third-color);
+    color: var(--first-color);
+    transition: 0.5s ease-in-out;
+}
+
+.booking-btn-secondary:hover {
+    background-color: var(--second-color);
+    color: var(--third-color);
+}
+
+/* ===================================
+   SUCCESS & ERROR MESSAGES
+   =================================== */
+.success-message {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    margin-bottom: 30px;
+    border: 3px solid #28a745;
+    box-shadow: 0 10px 40px rgba(40, 167, 69, 0.3);
+}
+
+.success-message h2 {
+    font-size: 2em;
+    margin-bottom: 15px;
+    color: #28a745;
+}
+
+.success-message p {
+    font-size: 1.1em;
+    margin-bottom: 10px;
+}
+
+.error-message {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    border: 3px solid #dc3545;
+}
+
+.error-message h3 {
+    margin-bottom: 15px;
+    color: #dc3545;
+}
+
+.error-message ul {
+    margin-left: 20px;
+}
+
+.error-message li {
+    margin-bottom: 8px;
+}
+
+
+/* ===================================
+   RESPONSIVE DESIGN
+   =================================== */
+@media (max-width: 768px) {
+    .container {
+        margin: 20px auto;
+        padding: 0 15px;
+    }
+
+    .header h1 {
+        font-size: 2em;
+    }
+
+    .booking-form {
+        padding: 25px 20px;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+    }
+}
+
+/* ===================================
+   PRINT STYLES (for booking confirmation)
+   =================================== */
+@media print {
+    body {
+        background: white;
+    }
+
+    .overlay,
+    .btn-primary,
+    .btn-secondary {
+        display: none;
+    }
+
+    .container {
+        max-width: 100%;
+        margin: 0;
+    }
+}

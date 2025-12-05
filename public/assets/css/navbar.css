@@ -1,0 +1,140 @@
+
+
+a {
+    text-decoration: none;
+    color: var(--first-color);
+}
+
+.navbar{
+    font-family: var(--font-main);
+    font-weight: 400;
+    background-color: transparent;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    padding: 0.8rem 2rem;
+    position: fixed;
+    width: 100%;
+    height: 18%;
+    z-index: 999;
+}
+
+.navbar.scrolled{
+    background-color: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.nav-container{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1250px;
+    margin: auto;
+}
+
+.logo img{
+    width: 140px;
+    height: 140px;
+}
+
+.nav-links{
+    list-style: none;
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-links li a{
+    font-size: 1rem;
+    transition: color 0.3s ease;
+}
+
+
+.nav-links li a:hover{
+    color: var(--second-color);
+}
+
+.login-button{
+    padding: 0.6rem 1.2rem;
+    border: 2px solid var(--first-color);
+    color: var(--first-color);
+    border-radius: 10px;
+    transition: color 0.3s ease;
+}
+
+.login-button:hover{
+    border: 2px solid var(--second-color);
+}
+
+.burger{
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    gap: 5px;
+}
+
+.burger i {
+  font-size: 1.5rem;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#close-icon {
+  display: none;
+}
+
+.burger.active #open-icon {
+  display: none;
+}
+
+.burger.active #close-icon {
+  display: inline;
+}
+
+
+
+
+
+
+@media (max-width: 768px) {
+
+    .nav-links{
+        position: absolute;
+        top: 8rem;
+        right: 0;
+        width: 100vw;
+        height: 100vh;
+        flex-direction: column;
+        align-items: center;
+        display: none;
+        gap: 2rem;
+        transition: all 0.3s ease;
+        background-color: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(8px);
+    }
+
+    .nav-links.scrolled{
+        background-color: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(8px);
+
+    }
+
+    .nav-links.active{
+        display: flex;
+    }
+
+    .nav-links li a{
+        color: var(--first-color);
+        font-size: 1.2rem;
+    }
+
+    .burger{
+        display: flex;
+    }
+
+    .burger i {
+    color: var(--first-color);
+    z-index: 999;
+    position: relative;
+  }
+}

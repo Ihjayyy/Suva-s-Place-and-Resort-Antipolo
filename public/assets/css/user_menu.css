@@ -1,0 +1,315 @@
+/* User Menu Styles */
+.user-menu-container {
+    position: relative;
+}
+
+.user-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    transition: all 0.5s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: white;
+    margin-top: -5px;
+}
+
+.user-button:hover {
+    background: rgba(199, 233, 9, 0.2);
+}
+
+.user-button i.fa-user-circle {
+    font-size: 20px;
+}
+
+.user-button i.fa-chevron-down {
+    font-size: 12px;
+    transition: transform 0.3s ease;
+}
+
+.user-button.active i.fa-chevron-down {
+    transform: rotate(180deg);
+}
+
+/* Dropdown Menu */
+.user-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: var(--first-color);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    min-width: 280px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.user-dropdown.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-header {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.dropdown-header i {
+    font-size: 40px;
+    color: #4CAF50;
+}
+
+.dropdown-header .user-name {
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 4px 0;
+}
+
+.dropdown-header .user-email {
+    font-size: 13px;
+    color: #666;
+    margin: 0;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: #eee;
+    margin: 8px 0;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    color: #333;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background: var(--first-color);
+}
+
+.dropdown-item i {
+    width: 20px;
+    font-size: 16px;
+    color: var(--third-color);
+}
+
+.dropdown-item.logout {
+    color: #f44336;
+}
+
+.dropdown-item.logout i {
+    color: #f44336;
+}
+
+.dropdown-item.logout:hover {
+    background: var(--first-color);
+}
+
+/* Review Modal Styles */
+.add-review-container {
+    text-align: center;
+}
+
+.btn-add-review {
+    padding: 12px 30px;
+    background: var(--third-color);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 5rem 0;
+}
+
+.btn-add-review:hover {
+    background: var(--second-color);
+    color: var(--third-color);
+}
+
+.review-modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s ease;
+}
+
+.review-modal.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    position: relative;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from { 
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to { 
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.close-modal {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close-modal:hover {
+    color: #333;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.rating-input {
+    margin-bottom: 20px;
+}
+
+.rating-input label {
+    display: block;
+    margin-bottom: 10px;
+    color: #333;
+    font-weight: 500;
+}
+
+.star-rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: center;
+    gap: 5px;
+}
+
+.star-rating input {
+    display: none;
+}
+
+.star-rating label {
+    font-size: 40px;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.star-rating input:checked ~ label,
+.star-rating label:hover,
+.star-rating label:hover ~ label {
+    color: #ffc107;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--third-color);
+    font-weight: 500;
+}
+
+.form-group input{
+    border: 2px solid var(--third-color);
+}
+
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    transition: border-color 0.3s;
+}
+
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--third-color);
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    background: var(--third-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-primary:hover {
+    background: var(--second-color);
+    color: var(--third-color);
+}
+
+.review-date {
+    font-size: 12px;
+    color: #999;
+    margin-top: 8px;
+    text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .user-dropdown {
+        min-width: 250px;
+        right: -10px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+    }
+}

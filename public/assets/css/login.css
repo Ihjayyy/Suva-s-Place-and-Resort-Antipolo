@@ -1,0 +1,242 @@
+body {
+    line-height: 1.6;
+    color: var(--third-color);
+    background: var(--first-color);
+}
+
+.container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Forms Section */
+.forms-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    background: var(--first-color);
+}
+
+.form-wrapper {
+    width: 100%;
+    max-width: 450px;
+}
+
+.form-content {
+    padding: 40px;
+}
+
+.form-title {
+    font-size: 2rem;
+    color: var(--third-color);
+    margin-top: 4.5rem;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.form-subtitle {
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 16px;
+}
+
+.input-group {
+    margin-bottom: 10px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--third-color);
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--third-color);
+    border-radius: 8px;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(44, 120, 115, 0.1);
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 10px;
+}
+
+.checkbox-group label {
+    margin-bottom: 0;
+    font-size: 14px;
+    color: var(--text-color);
+}
+
+.checkbox-group a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.checkbox-group a:hover {
+    text-decoration: underline;
+}
+
+.btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary {
+    background: var(--third-color);
+    color: var(--first-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--second-color);
+    color: var(--third-color);
+}
+
+.switch-form {
+    text-align: center;
+    margin-top: 20px;
+    color: #666;
+    font-size: 14px;
+}
+
+.switch-form a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.switch-form a:hover {
+    text-decoration: underline;
+}
+
+/* Alerts */
+.alert {
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Image Section */
+.image-container {
+    flex: 1;
+    position: relative;
+    background: url(../images/login-img-bg.png) center/cover no-repeat;
+    min-height: 100vh;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--third-color);
+    opacity: 0.80;
+}
+
+.image-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    color: var(--first-color);
+    padding: 40px;
+}
+
+.image-content h1 {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    font-weight: 800;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.image-content p {
+    font-size: 24px;
+    font-weight: 300;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+    .container {
+        flex-direction: column-reverse;
+    }
+    
+    .image-container {
+        min-height: 300px;
+    }
+    
+    .image-content h1 {
+        font-size: 40px;
+    }
+    
+    .image-content p {
+        font-size: 18px;
+    }
+    
+    .form-content {
+        padding: 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    .forms-container {
+        padding: 20px 15px;
+    }
+    
+    .form-content {
+        padding: 25px 20px;
+    }
+    
+    .form-title {
+        font-size: 26px;
+    }
+    
+    .image-content h1 {
+        font-size: 32px;
+    }
+}

@@ -1,0 +1,297 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+:root{
+    --main-font: "Poppins", sans-serif;
+    --color-primary: #ffffff;
+    --text-hover: #FFE100;
+    --color-secondary: #3C2A21;
+}
+
+
+
+.hero {
+  height: 100vh;
+  background: url('../images/hero-section-img.png') no-repeat center center/cover;
+  position: relative;
+  color: var(--color-primary);
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+  z-index: 5;
+}
+
+.hero-content h1 {
+  font-family: var(--main-font);
+  font-size: 4rem;
+  line-height: 1.2;
+}
+
+.hero-content span {
+  font-weight: bold;
+}
+
+.hero-content p {
+  font-family: var(--main-font);
+  margin: 1rem 0;
+  font-size: 1.2rem;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.btn-outline {
+  font-family: var(--main-font);
+  border-radius: 30px;
+  padding: 0.8rem 1.5rem;
+  background: transparent;
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
+  transition: 0.5s ease;
+}
+
+.btn-outline:hover {
+  background-color: var(--color-primary);
+  color: var(--color-secondary);
+}
+
+
+
+
+
+
+
+
+
+.packages {
+  position: relative;
+  background-color: var(--color-secondary);
+  color: var(--color-primary);
+  padding: 4rem 1rem;
+  text-align: center;
+  overflow: hidden;
+}
+
+
+.packages::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("../images/packages-img-bg.png") center/cover no-repeat;
+  z-index: 0;
+}
+
+
+.packages > * {
+  min-height: 35vh;
+  position: relative;
+  z-index: 1;
+}
+
+
+.packages-header p {
+  font-family: var(--main-font);
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+  color: var(--color-primary);
+  margin-bottom: 0.5rem;
+}
+
+.packages-header h2 {
+  font-family: var(--main-font);
+  font-size: 2.5rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 3rem;
+}
+
+/* Cards layout */
+.packages-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.package-card {
+  position: relative;
+  top: -5rem;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 2px solid var(--text-hover);
+  width: 350px;
+  height: 500px;
+  transition: transform 0.3s ease;
+  background: #000;
+}
+
+.package-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.5);
+  transition: filter 0.3s ease;
+}
+
+.package-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  margin-left: 11rem;
+}
+
+.package-overlay h3 {
+  font-family: var(--main-font);
+  transform: rotate(-90deg);
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+  padding: 1rem 0.5rem;
+  border-radius: 5px;
+}
+
+
+.package-card:hover {
+  cursor: pointer;
+  transform: translateY(-5px);
+}
+
+.package-card:hover img {
+  filter: brightness(1);
+}
+
+
+
+
+
+
+
+
+.reviews {
+  position: relative;
+  color: var(--color-secondary);
+  padding: 5rem 1rem;
+  text-align: center;
+  overflow: hidden;
+  background-color: var(--color-primary); 
+}
+
+
+.reviews::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("../images/reviews-img-bg.png") center/cover no-repeat;
+  z-index: 0;
+}
+
+
+.reviews > * {
+  min-height: 15vh;
+  position: relative;
+  z-index: 1;
+}
+
+.reviews-header h2 {
+  font-family: var(--main-font);
+  font-size: 2.5rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--color-secondary);
+  margin-bottom: 3rem;
+}
+
+
+.review-slider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  position: relative;
+  top: 2rem;
+  margin: auto;
+}
+
+
+.review-card {
+  font-family: var(--main-font);
+  background-color: rgba(255, 255, 255, 0.9);
+  color: var(--color-secondary);
+  max-width: 750px;
+  width: 100%;
+  padding: 3rem;
+  border-radius: 20px;
+  text-align: left;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.stars {
+  color: var(--text-hover);
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.review-text {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.reviewer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.reviewer img {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.reviewer span {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+/* Navigation buttons */
+.nav-btn {
+  background-color: var(--color-secondary);
+  border: none;
+  color: var(--color-primary);
+  font-size: 2rem;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.nav-btn:hover {
+  background-color: var(--text-hover);
+  color: var(--color-secondary);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

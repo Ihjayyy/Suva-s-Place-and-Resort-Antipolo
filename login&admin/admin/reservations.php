@@ -1,6 +1,5 @@
 <?php
 // admin/reservations.php
-
 require_once '../config/database.php';
 
 if (!is_logged_in() || !is_admin()) {
@@ -29,35 +28,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
 // Handle delete
 if (isset($_GET['delete']) && isset($_GET['id'])) {
     $reservation_id = (int)$_GET['id'];
-    $stmt = $conn->prepare("DELETE FROM reservations WHERE id = ?");
-    $stmt->bind_param("i", $reservation_id);
     
-    if ($stmt->execute()) {
+    // Start transaction
+    $conn->begin_transaction();
+    
+    try {
+        // Get reservation items to restore room inventory
+        $items_stmt = $conn->prepare("SELECT service_id FROM reservation_items WHERE reservation_id = ?");
+        $items_stmt->bind_param("i", $reservation_id);
+        $items_stmt->execute();
+        $items_result = $items_stmt->get_result();
+        
+        while ($item = $items_result->fetch_assoc()) {
+            // Restore room inventory
+            $restore_stmt = $conn->prepare("UPDATE room_inventory SET available_rooms = available_rooms + 1 WHERE service_id = ?");
+            $restore_stmt->bind_param("i", $item['service_id']);
+            $restore_stmt->execute();
+        }
+        
+        // Delete reservation (cascade will delete items)
+        $stmt = $conn->prepare("DELETE FROM reservations WHERE id = ?");
+        $stmt->bind_param("i", $reservation_id);
+        $stmt->execute();
+        
+        $conn->commit();
+        
         $success = 'Reservation deleted successfully';
         log_activity($_SESSION['user_id'], 'Delete Reservation', "Deleted reservation #$reservation_id");
-    } else {
-        $error = 'Failed to delete reservation';
+    } catch (Exception $e) {
+        $conn->rollback();
+        $error = 'Failed to delete reservation: ' . $e->getMessage();
     }
 }
 
 // Get filter parameters
 $status_filter = isset($_GET['status']) ? $_GET['status'] : 'all';
 $search = isset($_GET['search']) ? sanitize_input($_GET['search']) : '';
+$date_filter = isset($_GET['date']) ? sanitize_input($_GET['date']) : '';
 
 // Build query
-$query = "SELECT * FROM reservations WHERE 1=1";
+$query = "SELECT r.*, u.username, u.email as user_email 
+          FROM reservations r 
+          LEFT JOIN users u ON r.user_id = u.id 
+          WHERE 1=1";
 
 if ($status_filter !== 'all') {
-    $query .= " AND status = '" . $conn->real_escape_string($status_filter) . "'";
+    $query .= " AND r.status = '" . $conn->real_escape_string($status_filter) . "'";
 }
 
 if (!empty($search)) {
-    $query .= " AND (full_name LIKE '%$search%' OR booking_id LIKE '%$search%' OR contact_number LIKE '%$search%')";
+    $query .= " AND (r.full_name LIKE '%$search%' OR r.booking_id LIKE '%$search%' OR r.phone LIKE '%$search%' OR r.email LIKE '%$search%')";
 }
 
-$query .= " ORDER BY created_at DESC";
+if (!empty($date_filter)) {
+    $query .= " AND r.booking_date = '" . $conn->real_escape_string($date_filter) . "'";
+}
+
+$query .= " ORDER BY r.created_at DESC";
 
 $reservations = $conn->query($query);
+
+// Get statistics
+$stats_query = "SELECT 
+    COUNT(*) as total,
+    SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+    SUM(CASE WHEN status = 'confirmed' THEN 1 ELSE 0 END) as confirmed,
+    SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled,
+    SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
+    SUM(total_amount) as total_revenue
+    FROM reservations";
+$stats = $conn->query($stats_query)->fetch_assoc();
 
 $page_title = 'Reservations';
 include 'includes/header.php';
@@ -65,39 +105,110 @@ include 'includes/header.php';
 
 <div class="content-container">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-        <h1>All Reservations</h1>
-        <a href="reservation_add.php" class="btn btn-primary">+ New Booking</a>
+        <h1>Reservation Management</h1>
+        <a href="reservation_add.php" class="btn btn-primary">
+            <i class="fas fa-plus"></i> New Booking
+        </a>
     </div>
     
     <?php if ($success): ?>
-        <div class="alert alert-success"><?php echo $success; ?></div>
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i> <?php echo $success; ?>
+        </div>
     <?php endif; ?>
     
     <?php if ($error): ?>
-        <div class="alert alert-error"><?php echo $error; ?></div>
+        <div class="alert alert-error">
+            <i class="fas fa-exclamation-triangle"></i> <?php echo $error; ?>
+        </div>
     <?php endif; ?>
     
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: #3b82f6;">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="stat-info">
+                <h3><?php echo number_format($stats['total']); ?></h3>
+                <p>Total Bookings</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon" style="background: #f59e0b;">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-info">
+                <h3><?php echo number_format($stats['pending']); ?></h3>
+                <p>Pending</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon" style="background: #10b981;">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-info">
+                <h3><?php echo number_format($stats['confirmed']); ?></h3>
+                <p>Confirmed</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon" style="background: #8b5cf6;">
+                <i class="fas fa-peso-sign"></i>
+            </div>
+            <div class="stat-info">
+                <h3>₱<?php echo number_format($stats['total_revenue'], 2); ?></h3>
+                <p>Total Revenue</p>
+            </div>
+        </div>
+    </div>
+    
     <!-- Filters -->
-    <div class="data-table" style="margin-bottom: 20px;">
-        <form method="GET" action="" style="display: flex; gap: 15px; align-items: end;">
-            <div class="form-group" style="margin: 0; flex: 1;">
-                <label for="search">Search</label>
-                <input type="text" id="search" name="search" placeholder="Search by name, booking ID, or contact..." value="<?php echo htmlspecialchars($search); ?>">
+    <div class="filter-card">
+        <form method="GET" action="">
+            <div class="filter-grid">
+                <div class="form-group">
+                    <label for="search">
+                        <i class="fas fa-search"></i> Search
+                    </label>
+                    <input type="text" id="search" name="search" 
+                           placeholder="Name, Booking ID, Phone, Email..." 
+                           value="<?php echo htmlspecialchars($search); ?>">
+                </div>
+                
+                <div class="form-group">
+                    <label for="status">
+                        <i class="fas fa-filter"></i> Status
+                    </label>
+                    <select id="status" name="status">
+                        <option value="all" <?php echo $status_filter === 'all' ? 'selected' : ''; ?>>All Status</option>
+                        <option value="pending" <?php echo $status_filter === 'pending' ? 'selected' : ''; ?>>Pending</option>
+                        <option value="confirmed" <?php echo $status_filter === 'confirmed' ? 'selected' : ''; ?>>Confirmed</option>
+                        <option value="cancelled" <?php echo $status_filter === 'cancelled' ? 'selected' : ''; ?>>Cancelled</option>
+                        <option value="completed" <?php echo $status_filter === 'completed' ? 'selected' : ''; ?>>Completed</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="date">
+                        <i class="fas fa-calendar"></i> Date
+                    </label>
+                    <input type="date" id="date" name="date" 
+                           value="<?php echo htmlspecialchars($date_filter); ?>">
+                </div>
+                
+                <div class="form-group" style="display: flex; align-items: flex-end; gap: 10px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        Apply Filters
+                    </button>
+                    <a href="reservations.php" class="btn btn-secondary">
+                        <i class="fas fa-redo"></i>
+                    </a>
+                </div>
             </div>
-            
-            <div class="form-group" style="margin: 0; min-width: 200px;">
-                <label for="status">Filter by Status</label>
-                <select id="status" name="status">
-                    <option value="all" <?php echo $status_filter === 'all' ? 'selected' : ''; ?>>All Status</option>
-                    <option value="pending" <?php echo $status_filter === 'pending' ? 'selected' : ''; ?>>Pending</option>
-                    <option value="confirmed" <?php echo $status_filter === 'confirmed' ? 'selected' : ''; ?>>Confirmed</option>
-                    <option value="cancelled" <?php echo $status_filter === 'cancelled' ? 'selected' : ''; ?>>Cancelled</option>
-                    <option value="completed" <?php echo $status_filter === 'completed' ? 'selected' : ''; ?>>Completed</option>
-                </select>
-            </div>
-            
-            <button type="submit" class="btn btn-primary">Apply Filters</button>
-            <a href="reservations.php" class="btn btn-secondary">Reset</a>
         </form>
     </div>
     
@@ -107,13 +218,12 @@ include 'includes/header.php';
             <thead>
                 <tr>
                     <th>Booking ID</th>
-                    <th>Customer Name</th>
+                    <th>Customer</th>
                     <th>Contact</th>
-                    <th>Booking Date</th>
-                    <th>Shift</th>
+                    <th>Date & Time</th>
                     <th>Guests</th>
+                    <th>Amount</th>
                     <th>Status</th>
-                    <th>Created</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -121,34 +231,57 @@ include 'includes/header.php';
                 <?php if ($reservations && $reservations->num_rows > 0): ?>
                     <?php while ($reservation = $reservations->fetch_assoc()): ?>
                         <tr>
-                            <td><strong><?php echo htmlspecialchars($reservation['booking_id']); ?></strong></td>
-                            <td><?php echo htmlspecialchars($reservation['full_name']); ?></td>
-                            <td><?php echo htmlspecialchars($reservation['contact_number']); ?></td>
-                            <td><?php echo date('M d, Y', strtotime($reservation['booking_date'])); ?></td>
                             <td>
-                                <?php 
-                                $shifts = [
-                                    'day' => 'Day Swimming',
-                                    'night' => 'Night Tour',
-                                    'whole_day' => 'Overnight'
-                                ];
-                                echo $shifts[$reservation['shift']] ?? $reservation['shift'];
-                                ?>
+                                <strong><?php echo htmlspecialchars($reservation['booking_id']); ?></strong>
+                                <br><small style="color: #999;">
+                                    <i class="far fa-clock"></i>
+                                    <?php echo date('M d, Y h:i A', strtotime($reservation['created_at'])); ?>
+                                </small>
                             </td>
                             <td>
-                                <small>
-                                    Adults: <?php echo $reservation['num_adults']; ?><br>
-                                    Kids: <?php echo $reservation['num_kids']; ?>
+                                <strong><?php echo htmlspecialchars($reservation['full_name']); ?></strong>
+                                <br><small style="color: #666;">
+                                    <i class="far fa-envelope"></i>
+                                    <?php echo htmlspecialchars($reservation['email']); ?>
                                 </small>
+                            </td>
+                            <td>
+                                <i class="fas fa-phone"></i>
+                                <?php echo htmlspecialchars($reservation['phone']); ?>
+                            </td>
+                            <td>
+                                <strong><?php echo date('M d, Y', strtotime($reservation['booking_date'])); ?></strong>
+                                <br><small>
+                                    <?php 
+                                    $shifts = [
+                                        'day' => 'Day (8AM-4:30PM)',
+                                        'night' => 'Night (8PM-4:30AM)',
+                                        'whole_day' => 'Overnight (2PM-11AM)'
+                                    ];
+                                    echo $shifts[$reservation['shift']] ?? $reservation['shift'];
+                                    ?>
+                                </small>
+                            </td>
+                            <td>
+                                <i class="fas fa-users"></i>
+                                <?php echo $reservation['num_adults']; ?> adults
+                                <?php if ($reservation['num_kids'] > 0): ?>
+                                    <br><small><?php echo $reservation['num_kids']; ?> kids</small>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <strong style="color: #2c5f2d; font-size: 1.1rem;">
+                                    ₱<?php echo number_format($reservation['total_amount'], 2); ?>
+                                </strong>
                             </td>
                             <td>
                                 <form method="POST" action="" style="margin: 0;">
                                     <input type="hidden" name="reservation_id" value="<?php echo $reservation['id']; ?>">
-                                    <select name="status" onchange="this.form.submit()" class="badge <?php 
-                                        echo $reservation['status'] === 'confirmed' ? 'badge-success' : 
-                                            ($reservation['status'] === 'pending' ? 'badge-warning' : 
-                                            ($reservation['status'] === 'cancelled' ? 'badge-danger' : 'badge-info')); 
-                                    ?>" style="border: none; cursor: pointer;">
+                                    <select name="status" onchange="this.form.submit()" class="status-badge <?php 
+                                        echo $reservation['status'] === 'confirmed' ? 'status-success' : 
+                                            ($reservation['status'] === 'pending' ? 'status-warning' : 
+                                            ($reservation['status'] === 'cancelled' ? 'status-danger' : 'status-info')); 
+                                    ?>">
                                         <option value="pending" <?php echo $reservation['status'] === 'pending' ? 'selected' : ''; ?>>Pending</option>
                                         <option value="confirmed" <?php echo $reservation['status'] === 'confirmed' ? 'selected' : ''; ?>>Confirmed</option>
                                         <option value="cancelled" <?php echo $reservation['status'] === 'cancelled' ? 'selected' : ''; ?>>Cancelled</option>
@@ -157,21 +290,32 @@ include 'includes/header.php';
                                     <input type="hidden" name="update_status" value="1">
                                 </form>
                             </td>
-                            <td><small><?php echo date('M d, Y', strtotime($reservation['created_at'])); ?></small></td>
                             <td>
                                 <div class="action-buttons">
-                                    <a href="reservation_view.php?id=<?php echo $reservation['id']; ?>" class="btn btn-sm btn-primary">View</a>
-                                    <a href="reservation_edit.php?id=<?php echo $reservation['id']; ?>" class="btn btn-sm btn-secondary">Edit</a>
+                                    <a href="reservation_view.php?id=<?php echo $reservation['id']; ?>" 
+                                       class="btn btn-sm btn-primary" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="reservation_edit.php?id=<?php echo $reservation['id']; ?>" 
+                                       class="btn btn-sm btn-secondary" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
                                     <a href="?delete=1&id=<?php echo $reservation['id']; ?>" 
                                        class="btn btn-sm btn-danger" 
-                                       onclick="return confirm('Are you sure you want to delete this reservation?')">Delete</a>
+                                       onclick="return confirm('Are you sure you want to delete this reservation?')"
+                                       title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
                                 </div>
                             </td>
                         </tr>
                     <?php endwhile; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="9" style="text-align: center;">No reservations found</td>
+                        <td colspan="8" style="text-align: center; padding: 40px; color: #999;">
+                            <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 15px; display: block;"></i>
+                            No reservations found
+                        </td>
                     </tr>
                 <?php endif; ?>
             </tbody>
@@ -180,33 +324,111 @@ include 'includes/header.php';
 </div>
 
 <style>
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stat-info h3 {
+    margin: 0;
+    font-size: 2rem;
+    color: #111827;
+}
+
+.stat-info p {
+    margin: 5px 0 0;
+    color: #6b7280;
+    font-size: 0.95rem;
+}
+
+.filter-card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 20px;
+    align-items: end;
+}
+
+@media (max-width: 1024px) {
+    .filter-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .filter-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 .action-buttons {
     display: flex;
-    gap: 5px;
-    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
 }
 
 .btn-sm {
-    padding: 5px 10px;
-    font-size: 12px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
 }
 
-.badge {
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 500;
+.status-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
 }
 
-.badge-success { background: #10b981; color: white; }
-.badge-warning { background: #f59e0b; color: white; }
-.badge-danger { background: #ef4444; color: white; }
-.badge-info { background: #3b82f6; color: white; }
+.status-success { background: #10b981; color: white; }
+.status-warning { background: #f59e0b; color: white; }
+.status-danger { background: #ef4444; color: white; }
+.status-info { background: #3b82f6; color: white; }
+
+.status-badge:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
 
 .alert {
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 4px;
+    padding: 15px 20px;
+    margin-bottom: 25px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .alert-success {
@@ -219,6 +441,40 @@ include 'includes/header.php';
     background: #fee2e2;
     color: #991b1b;
     border: 1px solid #ef4444;
+}
+
+.data-table {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.data-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table thead {
+    background: #f9fafb;
+}
+
+.data-table th {
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.data-table td {
+    padding: 15px;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: top;
+}
+
+.data-table tbody tr:hover {
+    background: #f9fafb;
 }
 </style>
 

@@ -1,96 +1,30 @@
 <?php
-
-// Include database configuration
 require_once '../login&admin/config/database.php';
 
-// Initialize variables to store form data and errors
-$errors = [];
-$success = false;
+// Redirect to login if not logged in
+if (!is_logged_in()) {
+    $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
+    redirect('../login&admin/login.php');
+}
 
-// Process form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Sanitize and validate input data
-    $fullName = sanitize_input($_POST['full_name'] ?? '');
-    $contactNumber = sanitize_input($_POST['contact_number'] ?? '');
-    $address = sanitize_input($_POST['address'] ?? '');
-    $bookingDate = sanitize_input($_POST['booking_date'] ?? '');
-    $numAdults = intval($_POST['num_adults'] ?? 0);
-    $numKids = intval($_POST['num_kids'] ?? 0);
-    $room = sanitize_input($_POST['room'] ?? '');
-    $swimmingType = sanitize_input($_POST['swimming_type'] ?? '');
-    $cottage = sanitize_input($_POST['cottage'] ?? '');
-    $others = sanitize_input($_POST['others'] ?? '');
-    $shift = sanitize_input($_POST['shift'] ?? '');
+// Fetch all available services
+$services = [];
+$servicesQuery = "SELECT * FROM services WHERE availability = 'available' ORDER BY category, price";
+$servicesResult = $conn->query($servicesQuery);
 
-    // Validation
-    if (empty($fullName)) $errors[] = "Full Name is required";
-    if (empty($contactNumber)) $errors[] = "Contact Number is required";
-    if (empty($address)) $errors[] = "Address is required";
-    if (empty($bookingDate)) $errors[] = "Booking Date is required";
-    if ($numAdults < 1) $errors[] = "At least 1 adult is required";
-    if (empty($shift)) $errors[] = "Shift selection is required";
-    
-    // Validate booking date (must be at least 7 days in advance)
-    $bookingTimestamp = strtotime($bookingDate);
-    $currentTimestamp = strtotime(date('Y-m-d'));
-    $daysDifference = ($bookingTimestamp - $currentTimestamp) / (60 * 60 * 24);
-    
-    if ($daysDifference < 7) {
-        $errors[] = "Booking must be made at least 7 days in advance";
-    }
-
-    // If no errors, process the booking
-    if (empty($errors)) {
-        // Generate a unique booking ID
-        $bookingId = 'BK-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
-
-        // Prepare SQL statement to insert booking into database
-        $stmt = $conn->prepare("INSERT INTO reservations (booking_id, full_name, contact_number, address, booking_date, num_adults, num_kids, room, swimming_type, cottage, shift, others, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')");
-        
-        $stmt->bind_param("sssssiisssss", 
-            $bookingId, 
-            $fullName, 
-            $contactNumber, 
-            $address, 
-            $bookingDate, 
-            $numAdults, 
-            $numKids, 
-            $room, 
-            $swimmingType, 
-            $cottage, 
-            $shift, 
-            $others
-        );
-
-        if ($stmt->execute()) {
-            // Store booking info in session for confirmation display
-            $_SESSION['last_booking'] = [
-                'booking_id' => $bookingId,
-                'full_name' => $fullName,
-                'contact_number' => $contactNumber,
-                'booking_date' => $bookingDate,
-                'num_adults' => $numAdults,
-                'num_kids' => $numKids,
-                'shift' => $shift
-            ];
-
-            $success = true;
-        } else {
-            $errors[] = "Failed to submit booking. Please try again. Error: " . $stmt->error;
-        }
-
-        $stmt->close();
-    }
+while ($row = $servicesResult->fetch_assoc()) {
+    $services[] = $row;
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Booking | Suva's Place and Resort Antipolo</title>
-    <!-- Link to external CSS file -->
+    <title>Book now | Suva's Place and Resort Antipolo</title>
+
     <link rel="stylesheet" href="../public/assets/css/navbar.css">
     <link rel="stylesheet" href="../public/assets/css/booking_page.css">
     <link rel="stylesheet" href="../public/assets/css/shared.css">
@@ -100,10 +34,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="icon" type="image/x-icon" href="../public/assets/images/suva's_place_logo.ico">
 
     <script defer src="../public/assets/js/navbar.js"></script>
+    <script defer src="../public/assets/js/booking_page.js"></script>
     <script defer src="../public/assets/js/user_menu.js"></script>
 </head>
 
 <body>
+
+    <!------------------------ NAVIGATION BAR ------------------------->
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
@@ -115,22 +52,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <li><a href="about_page.php">About us</a></li>
                 <li><a href="gallery_page.php">Gallery</a></li>
                 <li><a href="contacts_page.php">Contacts</a></li>
-                
-                <?php if(is_logged_in()): ?>
+
+                <?php if (is_logged_in()): ?>
                     <li class="user-menu-container">
                         <a href="#" class="user-button" id="userMenuBtn">
-                            <i class="fas fa-user-circle"></i> 
+                            <i class="fas fa-user-circle"></i>
                             <?php echo htmlspecialchars($_SESSION['username']); ?>
                             <i class="fas fa-chevron-down"></i>
                         </a>
-                        
-                        <!-- User Dropdown Menu -->
+
                         <div class="user-dropdown" id="userDropdown">
                             <div class="dropdown-header">
                                 <i class="fas fa-user-circle"></i>
                                 <div>
                                     <p class="user-name"><?php echo htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username']); ?></p>
-                                    <p class="user-email"><?php echo htmlspecialchars($_SESSION['username']); ?></p>
+                                    <p class="user-email"><?php echo htmlspecialchars($_SESSION['email'] ?? $_SESSION['username']); ?></p>
                                 </div>
                             </div>
                             <div class="dropdown-divider"></div>
@@ -143,227 +79,404 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <a href="help_support.php" class="dropdown-item">
                                 <i class="fas fa-question-circle"></i> Help & Support
                             </a>
-                            <a href="terms.php" class="dropdown-item">
-                                <i class="fas fa-file-contract"></i> Terms and Conditions
-                            </a>
                             <div class="dropdown-divider"></div>
                             <a href="../login&admin/logout.php" class="dropdown-item logout">
                                 <i class="fas fa-sign-out-alt"></i> Logout
                             </a>
                         </div>
                     </li>
-                <?php else: ?>
-                    <li><a href="../login&admin/login.php" class="login-button"><i class="fas fa-user"></i> Login</a></li>
                 <?php endif; ?>
             </ul>
 
             <div class="burger" id="burger">
-                  <i class="fas fa-bars" id="open-icon"></i>
-                  <i class="fas fa-arrow-left" id="close-icon"></i>
+                <i class="fas fa-bars" id="open-icon"></i>
+                <i class="fas fa-arrow-left" id="close-icon"></i>
             </div>
         </div>
     </nav>
 
+    <!------------------------- BOOK NOW HERO SECTION --------------------->
     <section class="hero">
         <div class="hero-content">
             <h1>Book now</h1>
         </div>
     </section>
-    <div class="overlay"></div>
 
-    <div class="container">
-
+    <div class="page-wrapper">
         <header class="header">
-            <h1>Suva's Place and Resort Antipolo</h1>
-            <p class="tagline">Have fun under the sun!</p>
+            <h1 class="resort-title">Suva's Place and Resort Antipolo</h1>
+            <p class="resort-subtitle">Have fun under the sun!</p>
+            <p>Book your perfect getaway with our exclusive accommodations</p>
         </header>
 
-        <?php if ($success): ?>
-            <div class="success-message">
-                <h2>Booking Confirmed!</h2>
-                <p>Thank you, <strong><?php echo htmlspecialchars($_SESSION['last_booking']['full_name']); ?></strong>!</p>
-                <p>Your Booking ID: <strong><?php echo htmlspecialchars($_SESSION['last_booking']['booking_id']); ?></strong></p>
-                <p>Please save this ID for your records. A confirmation will be sent to your contact number.</p>
-                <p><em>Your booking status is currently "Pending" and will be reviewed by our admin.</em></p>
-                <button onclick="window.location.href='booking_page.php'" class="btn-primary">Make Another Booking</button>
-            </div>
-        <?php else: ?>
+        <div class="booking-container">
+            <!-- Accommodation Selection Section -->
+            <section class="accommodation-section">
+                <h2 class="section-title">Choose Your Accommodation</h2>
+                <p class="section-subtitle">Select from our exquisite cottages and rooms</p>
 
-            <?php if (!empty($errors)): ?>
-                <!------------------- ERROR DISPLAY SECTION ------------------->
-                <div class="error-message">
-                    <h3>Please fix the following errors:</h3>
-                    <ul>
-                        <?php foreach ($errors as $error): ?>
-                            <li><?php echo htmlspecialchars($error); ?></li>
-                        <?php endforeach; ?>
-                    </ul>
+                <!-- Cottages Gallery -->
+                <div class="accommodation-category">
+                    <h3 class="category-title"><i class="fas fa-home"></i> Beach Cottages</h3>
+                    <div class="gallery-container">
+                        <!-- Umbrella Cottage -->
+                        <div class="gallery-card" onclick="openModal('umbrella')">
+                            <div class="gallery-image">
+                                <img src="../public/assets/images/umbrella-cottage.png" alt="Umbrella Cottage" onerror="this.src='../public/assets/images/placeholder.jpg'">
+                                <div class="gallery-overlay">
+                                    <i class="fas fa-search-plus"></i>
+                                    <p>View Details</p>
+                                </div>
+                            </div>
+                            <div class="gallery-info">
+                                <h4>Umbrella Cottage</h4>
+                                <p class="gallery-capacity"><i class="fas fa-users"></i> 4-5 pax</p>
+                                <p class="gallery-price">Starting at ₱600</p>
+                            </div>
+                        </div>
+
+                        <!-- Family Cottage -->
+                        <div class="gallery-card" onclick="openModal('family')">
+                            <div class="gallery-image">
+                                <img src="../public/assets/images/family-cottage.png" alt="Family Cottage" onerror="this.src='../public/assets/images/placeholder.jpg'">
+                                <div class="gallery-overlay">
+                                    <i class="fas fa-search-plus"></i>
+                                    <p>View Details</p>
+                                </div>
+                            </div>
+                            <div class="gallery-info">
+                                <h4>Family Cottage</h4>
+                                <p class="gallery-capacity"><i class="fas fa-users"></i> 10-15 pax</p>
+                                <p class="gallery-price">Starting at ₱900</p>
+                            </div>
+                        </div>
+
+                        <!-- Barkada Cottage -->
+                        <div class="gallery-card" onclick="openModal('barkada')">
+                            <div class="gallery-image">
+                                <img src="../public/assets/images/barkada-cottage.png" alt="Barkada Cottage" onerror="this.src='../public/assets/images/placeholder.jpg'">
+                                <div class="gallery-overlay">
+                                    <i class="fas fa-search-plus"></i>
+                                    <p>View Details</p>
+                                </div>
+                            </div>
+                            <div class="gallery-info">
+                                <h4>Barkada Cottage</h4>
+                                <p class="gallery-capacity"><i class="fas fa-users"></i> 20-30 pax</p>
+                                <p class="gallery-price">Starting at ₱1,300</p>
+                            </div>
+                        </div>
+
+                        <!-- Silong -->
+                        <div class="gallery-card" onclick="openModal('silong')">
+                            <div class="gallery-image">
+                                <img src="../public/assets/images/silong.png" alt="Silong" onerror="this.src='../public/assets/images/placeholder.jpg'">
+                                <div class="gallery-overlay">
+                                    <i class="fas fa-search-plus"></i>
+                                    <p>View Details</p>
+                                </div>
+                            </div>
+                            <div class="gallery-info">
+                                <h4>Silong</h4>
+                                <p class="gallery-capacity"><i class="fas fa-users"></i> 30-40 pax</p>
+                                <p class="gallery-price">₱2,000 / day</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            <?php endif; ?>
 
-            <!--------------------- BOOKING FORM ------------------------>
-            <form method="POST" action="" class="booking-form">
+                <!-- Rooms Gallery -->
+                <div class="accommodation-category">
+                    <h3 class="category-title"><i class="fas fa-bed"></i> Premium Rooms</h3>
+                    <div class="gallery-container">
+                        <!-- Casa Ernesto -->
+                        <div class="gallery-card" onclick="openModal('ernesto')">
+                            <div class="gallery-image">
+                                <img src="../public/assets/images/casa-ernesto.png" alt="Casa Ernesto" onerror="this.src='../public/assets/images/placeholder.jpg'">
+                                <div class="gallery-overlay">
+                                    <i class="fas fa-search-plus"></i>
+                                    <p>View Details</p>
+                                </div>
+                            </div>
+                            <div class="gallery-info">
+                                <h4>Casa Ernesto</h4>
+                                <p class="gallery-capacity"><i class="fas fa-users"></i> Up to 18 guests</p>
+                                <p class="gallery-price">Starting at ₱6,500</p>
+                            </div>
+                        </div>
 
-                <!-------------------------------- GUEST INFO -------------------------------->
-                <section class="form-section">
-                    <h2 class="section-title">Guest Information</h2>
+                        <!-- Casa Ma. Elena -->
+                        <div class="gallery-card" onclick="openModal('elena')">
+                            <div class="gallery-image">
+                                <img src="../public/assets/images/casa-elena.png" alt="Casa Ma. Elena" onerror="this.src='../public/assets/images/placeholder.jpg'">
+                                <div class="gallery-overlay">
+                                    <i class="fas fa-search-plus"></i>
+                                    <p>View Details</p>
+                                </div>
+                            </div>
+                            <div class="gallery-info">
+                                <h4>Casa Ma. Elena</h4>
+                                <p class="gallery-capacity"><i class="fas fa-users"></i> Up to 8 guests</p>
+                                <p class="gallery-price">Starting at ₱4,000</p>
+                            </div>
+                        </div>
 
-                    <div class="form-group">
-                        <label for="full_name">Full Name <span class="required">*</span></label>
-                        <input type="text" id="full_name" name="full_name"
-                            value="<?php echo htmlspecialchars($_POST['full_name'] ?? ''); ?>"
-                            placeholder="Enter your full name" required>
+                        <!-- Casa Edmundo -->
+                        <div class="gallery-card" onclick="openModal('edmundo')">
+                            <div class="gallery-image">
+                                <img src="../public/assets/images/casa-edmundo.png" alt="Casa Edmundo" onerror="this.src='../public/assets/images/placeholder.jpg'">
+                                <div class="gallery-overlay">
+                                    <i class="fas fa-search-plus"></i>
+                                    <p>View Details</p>
+                                </div>
+                            </div>
+                            <div class="gallery-info">
+                                <h4>Casa Edmundo</h4>
+                                <p class="gallery-capacity"><i class="fas fa-users"></i> Up to 5 guests</p>
+                                <p class="gallery-price">Starting at ₱3,000</p>
+                            </div>
+                        </div>
+
+                        <!-- Standard Cuarto -->
+                        <div class="gallery-card" onclick="openModal('standard')">
+                            <div class="gallery-image">
+                                <img src="../public/assets/images/standard-cuarto.png" alt="Standard Cuarto" onerror="this.src='../public/assets/images/placeholder.jpg'">
+                                <div class="gallery-overlay">
+                                    <i class="fas fa-search-plus"></i>
+                                    <p>View Details</p>
+                                </div>
+                            </div>
+                            <div class="gallery-info">
+                                <h4>Standard Cuarto</h4>
+                                <p class="gallery-capacity"><i class="fas fa-clock"></i> Hourly rates</p>
+                                <p class="gallery-price">Starting at ₱500</p>
+                            </div>
+                        </div>
+
+                        <!-- Deluxe Cuarto -->
+                        <div class="gallery-card" onclick="openModal('deluxe')">
+                            <div class="gallery-image">
+                                <img src="../public/assets/images/deluxe-cuarto.png" alt="Deluxe Cuarto" onerror="this.src='../public/assets/images/placeholder.jpg'">
+                                <div class="gallery-overlay">
+                                    <i class="fas fa-search-plus"></i>
+                                    <p>View Details</p>
+                                </div>
+                            </div>
+                            <div class="gallery-info">
+                                <h4>Deluxe Cuarto</h4>
+                                <p class="gallery-capacity"><i class="fas fa-clock"></i> Hourly rates</p>
+                                <p class="gallery-price">Starting at ₱700</p>
+                            </div>
+                        </div>
                     </div>
+                </div>
+            </section>
 
-                    <div class="form-group">
-                        <label for="contact_number">Contact Number <span class="required">*</span></label>
-                        <input type="tel" id="contact_number" name="contact_number"
-                            value="<?php echo htmlspecialchars($_POST['contact_number'] ?? ''); ?>"
-                            placeholder="e.g., +63 912 345 6789" required>
+            <!-- Booking Form Section -->
+            <section class="form-section">
+                <h2 class="section-title">Booking Details</h2>
+                <p class="section-subtitle">Complete your reservation</p>
+
+                <!-- Selected Items Display -->
+                <div class="selected-items" id="selectedItems">
+                    <h3 class="selected-title">Your Selection</h3>
+                    <p class="selection-instruction">
+                        <i class="fas fa-info-circle"></i> 
+                        Select <strong>one cottage</strong> (required) and optionally <strong>one room</strong>
+                    </p>
+                    <div class="selected-list" id="selectedList">
+                        <p class="no-selection">No accommodation selected yet. Please select at least one cottage.</p>
                     </div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="address">Address <span class="required">*</span></label>
-                        <textarea id="address" name="address" rows="3"
-                            placeholder="Enter your complete address" required><?php echo htmlspecialchars($_POST['address'] ?? ''); ?></textarea>
-                    </div>
-                </section>
+                <!-- Booking Form -->
+                <form class="booking-form" id="bookingForm" enctype="multipart/form-data">
+                    <!-- Guest Information -->
+                    <div class="form-section-group">
+                        <h3 class="form-section-title"><i class="fas fa-user"></i> Guest Information</h3>
 
-                <!--------------------------- BOOKING DETAILS SECTION -------------------------->
-                <section class="form-section">
-                    <h2 class="section-title">Booking Details</h2>
-
-                    <div class="form-row">
                         <div class="form-group">
-                            <label for="booking_date">Booking Date <span class="required">*</span></label>
-                            <input type="date" id="booking_date" name="booking_date"
-                                value="<?php echo htmlspecialchars($_POST['booking_date'] ?? ''); ?>"
-                                min="<?php echo date('Y-m-d', strtotime('+7 days')); ?>" required>
+                            <label for="fullName" class="required">Full Name</label>
+                            <input type="text" id="fullName" name="fullName" required
+                                placeholder="Enter your full name"
+                                value="<?php echo htmlspecialchars($_SESSION['full_name'] ?? ''); ?>">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="email" class="required">Email Address</label>
+                                <input type="email" id="email" name="email" required
+                                    placeholder="Enter your email address"
+                                    value="<?php echo htmlspecialchars($_SESSION['email'] ?? ''); ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="contactNumber" class="required">Contact Number</label>
+                                <input type="tel" id="contactNumber" name="contactNumber" required
+                                    placeholder="Enter your phone number"
+                                    value="<?php echo htmlspecialchars($_SESSION['phone'] ?? ''); ?>">
+                            </div>
                         </div>
 
                         <div class="form-group">
-                            <label for="shift">Shift <span class="required">*</span></label>
-                            <select id="shift" name="shift" required>
-                                <option value="">Select Shift</option>
-                                <option value="day" <?php echo ($_POST['shift'] ?? '') === 'day' ? 'selected' : ''; ?>>Day Swimming (8:00 AM - 4:30 PM)</option>
-                                <option value="night" <?php echo ($_POST['shift'] ?? '') === 'night' ? 'selected' : ''; ?>>Night Tour (8:00 PM - 4:30 AM)</option>
-                                <option value="whole_day" <?php echo ($_POST['shift'] ?? '') === 'whole_day' ? 'selected' : ''; ?>>Overnight Stay (2:00 PM - 11:00 AM)</option>
+                            <label for="address" class="required">Address</label>
+                            <textarea id="address" name="address" required rows="3"
+                                placeholder="Enter your complete address"><?php echo htmlspecialchars($_SESSION['address'] ?? ''); ?></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Booking Details -->
+                    <div class="form-section-group">
+                        <h3 class="form-section-title"><i class="fas fa-calendar"></i> Booking Details</h3>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="checkIn" class="required">Check-in Date & Time</label>
+                                <input type="datetime-local" id="checkIn" name="checkIn" required
+                                    min="<?php echo date('Y-m-d\TH:i'); ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="checkOut" class="required">Check-out Date & Time</label>
+                                <input type="datetime-local" id="checkOut" name="checkOut" required
+                                    min="<?php echo date('Y-m-d\TH:i'); ?>">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="guestCount" class="required">Number of Adults</label>
+                                <input type="number" id="guestCount" name="guestCount" min="1" max="50" required value="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="numKids">Number of Kids</label>
+                                <input type="number" id="numKids" name="numKids" min="0" max="50" value="0">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="additionalRequests">Special Requests</label>
+                            <select id="additionalRequests" name="additionalRequests">
+                                <option value="">None</option>
+                                <option value="extra-bed">Extra Bed</option>
+                                <option value="early-checkin">Early Check-in</option>
+                                <option value="late-checkout">Late Check-out</option>
+                                <option value="airport-transfer">Airport Transfer</option>
                             </select>
                         </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="num_adults">No. of Adults <span class="required">*</span></label>
-                            <input type="number" id="num_adults" name="num_adults"
-                                value="<?php echo htmlspecialchars($_POST['num_adults'] ?? '1'); ?>"
-                                min="1" max="50" required>
-                        </div>
 
                         <div class="form-group">
-                            <label for="num_kids">No. of Kids</label>
-                            <input type="number" id="num_kids" name="num_kids"
-                                value="<?php echo htmlspecialchars($_POST['num_kids'] ?? '0'); ?>"
-                                min="0" max="50">
+                            <label for="notes">Additional Notes</label>
+                            <textarea id="notes" name="notes" rows="3"
+                                placeholder="Any special requirements or notes..."></textarea>
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="room">Room</label>
-                            <select id="room" name="room">
-                                <option value="">No Room</option>
-                                <option value="standard" <?php echo ($_POST['room'] ?? '') === 'standard' ? 'selected' : ''; ?>>Standard Room</option>
-                                <option value="deluxe" <?php echo ($_POST['room'] ?? '') === 'deluxe' ? 'selected' : ''; ?>>Deluxe Room</option>
-                                <option value="family" <?php echo ($_POST['room'] ?? '') === 'family' ? 'selected' : ''; ?>>Family Room</option>
-                                <option value="suite" <?php echo ($_POST['room'] ?? '') === 'suite' ? 'selected' : ''; ?>>Suite</option>
-                            </select>
+                    <!-- Payment Section -->
+                    <div class="form-section-group">
+                        <h3 class="form-section-title"><i class="fas fa-credit-card"></i> Payment Details</h3>
+
+                        <div class="payment-options">
+                            <div class="payment-option active" data-method="onsite">
+                                <i class="fas fa-money-bill-wave"></i>
+                                <div>
+                                    <label>Pay at Resort</label>
+                                    <p>Pay when you arrive</p>
+                                </div>
+                            </div>
+                            <div class="payment-option" data-method="online">
+                                <i class="fas fa-mobile-alt"></i>
+                                <div>
+                                    <label>Online Payment</label>
+                                    <p>Pay now with proof</p>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="swimming_type">Swimming Type</label>
-                            <select id="swimming_type" name="swimming_type">
-                                <option value="">No Swimming</option>
-                                <option value="adult_pool" <?php echo ($_POST['swimming_type'] ?? '') === 'adult_pool' ? 'selected' : ''; ?>>Adult Pool</option>
-                                <option value="kids_pool" <?php echo ($_POST['swimming_type'] ?? '') === 'kids_pool' ? 'selected' : ''; ?>>Kids Pool</option>
-                                <option value="infinity_pool" <?php echo ($_POST['swimming_type'] ?? '') === 'infinity_pool' ? 'selected' : ''; ?>>Infinity Pool</option>
-                            </select>
+                        <input type="hidden" id="paymentMethod" name="paymentMethod" value="onsite">
+
+                        <div class="file-upload" id="proofUpload" style="display: none;">
+                            <div class="form-group">
+                                <label for="proofOfPayment">Proof of Payment</label>
+                                <div class="file-input-wrapper">
+                                    <input type="file" id="proofOfPayment" name="proofOfPayment" accept="image/*,.pdf">
+                                    <div class="file-input-label">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <p>Click to upload proof of payment (Image or PDF)</p>
+                                        <p class="file-info" id="fileInfo">No file selected</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="file-preview" id="filePreview"></div>
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="cottage">Cottage</label>
-                        <select id="cottage" name="cottage">
-                            <option value="">No Cottage</option>
-                            <option value="small" <?php echo ($_POST['cottage'] ?? '') === 'small' ? 'selected' : ''; ?>>Umbrella Cottage (4-5 pax)</option>
-                            <option value="medium" <?php echo ($_POST['cottage'] ?? '') === 'medium' ? 'selected' : ''; ?>>Family Cottage (10-15 pax)</option>
-                            <option value="large" <?php echo ($_POST['cottage'] ?? '') === 'large' ? 'selected' : ''; ?>>Barkada Cottage (20-30 pax)</option>
-                            <option value="pavilion" <?php echo ($_POST['cottage'] ?? '') === 'pavilion' ? 'selected' : ''; ?>>Silong (30-40 pax)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="others">Others (Special Requests)</label>
-                        <textarea id="others" name="others" rows="3"
-                            placeholder="Any special requests, dietary requirements, or additional services?"><?php echo htmlspecialchars($_POST['others'] ?? ''); ?></textarea>
-                    </div>
-                </section>
-
-                <!----------------------------POLICY SECTION---------------------------->
-                <section class="policy-section">
-                    <h2 class="section-title">Booking Policy</h2>
-                    <div class="policy-content">
+                    <!-- Booking Policy -->
+                    <div class="booking-policy">
+                        <h3><i class="fas fa-info-circle"></i> Booking Policy</h3>
                         <ol>
-                            <li>Must be made 7 days before the date of reservation.</li>
-                            <li>In an event of "No Show", Initial Deposit is no longer refundable.</li>
-                            <li>Non-refundable unless accidents and god acts occur.</li>
-                            <li>Once settled, payments are Non-refundable.</li>
+                            <li>Reschedule must be made 7 days before the date of reservation.</li>
+                            <li>In an event of "No Show" Initial Deposit is no longer refundable.</li>
+                            <li>Initial Deposit is non-refundable unless accidents and god acts occurs.</li>
+                            <li>Once it settles, payments are Non-refundable.</li>
                         </ol>
-                        <div class="policy-agreement">
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="agree_policy" required>
-                                <span>I have read and agree to the booking policy <span class="required">*</span></span>
-                            </label>
-                        </div>
                     </div>
-                </section>
 
-                <!-------------------SUBMIT BUTTON-------------------->
-                <div class="form-actions">
-                    <button type="submit" class="booking-btn-primary">Submit Booking</button>
-                    <button type="reset" class="booking-btn-secondary">Clear Form</button>
+                    <!-- Total Display -->
+                    <div class="total-display">
+                        <div class="total-label">Total Amount</div>
+                        <div class="total-amount" id="totalAmount">₱0</div>
+                    </div>
+
+                    <!-- Terms & Submit -->
+                    <div class="form-group terms-group">
+                        <input type="checkbox" id="terms" name="terms" required>
+                        <label for="terms">I agree to the terms and conditions, cancellation policy, and booking policy stated above</label>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        <i class="fas fa-calendar-check"></i> Confirm Booking
+                    </button>
+                </form>
+            </section>
+        </div>
+
+        <!----------------------------- FOOTER SECTION -------------------------------->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="../public/assets/images/suva's_logo_white.png">
                 </div>
-            </form>
 
-        <?php endif; ?>
+                <nav class="footer-nav">
+                    <a href="landing_page.php">Home</a>
+                    <a href="about_page.php">About us</a>
+                    <a href="gallery_page.php">Gallery</a>
+                    <a href="booking_page.php">Book Now</a>
+                    <a href="contacts_page.php">Contact us</a>
+                </nav>
+
+                <div class="footer-socials">
+                    <a href=""><i class="fab fa-facebook-f"></i></a>
+                    <a href=""><i class="fab fa-tiktok"></i></a>
+                    <a href=""><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <hr />
+                <p>©2025 Suva's Place Resort Antipolo. All rights reserved.</p>
+            </div>
+        </footer>
     </div>
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-logo">
-                <img src="../public/assets/images/suva's_logo_white.png">
-            </div>
 
-            <nav class="footer-nav">
-                <a href="landing_page.php">Home</a>
-                <a href="about_page.php">About us</a>
-                <a href="gallery_page.php">Gallery</a>
-                <a href="login_page.php">Login</a>
-                <a href="">Book Now</a>
-                <a href="contacts_page.php">Contact us</a>
-            </nav>
-
-            <div class="footer-socials">
-                <a href=""><i class="fab fa-facebook-f"></i></a>
-                <a href=""><i class="fab fa-tiktok"></i></a>
-                <a href=""><i class="fab fa-instagram"></i></a>
-            </div>
-        </div>
-
-        <div class="footer-bottom">
-            <hr />
-            <p>©2025 Suva's Place Resort Antipolo. All rights reserved.</p>
-        </div>
-    </footer>
+    <!-- Modals for each accommodation -->
+    <?php 
+    $modals_file = __DIR__ . '/accommodation_modals.php';
+    if (file_exists($modals_file)) {
+        include $modals_file;
+    } else {
+        echo "<!-- Warning: accommodation_modals.php not found at: " . $modals_file . " -->";
+    }
+    ?>
 
 </body>
 

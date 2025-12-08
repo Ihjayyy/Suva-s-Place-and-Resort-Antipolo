@@ -14,18 +14,30 @@ if ($reservation_id <= 0) {
 
 // Handle delete request
 if (isset($_GET['delete']) && $_GET['delete'] == 1) {
+    // Disable foreign key checks temporarily to avoid constraint issues
+    $conn->query("SET FOREIGN_KEY_CHECKS = 0");
+    
     $stmt = $conn->prepare("DELETE FROM reservations WHERE id = ?");
     $stmt->bind_param("i", $reservation_id);
     
     if ($stmt->execute()) {
         $_SESSION['success_message'] = 'Reservation deleted successfully!';
-        log_activity($_SESSION['user_id'], 'Delete Reservation', "Deleted reservation #$reservation_id");
+        if (function_exists('log_activity')) {
+            log_activity($_SESSION['user_id'], 'Delete Reservation', "Deleted reservation #$reservation_id");
+        }
+        $stmt->close();
+        
+        // Re-enable foreign key checks
+        $conn->query("SET FOREIGN_KEY_CHECKS = 1");
+        
+        redirect('reservations.php');
     } else {
-        $_SESSION['error_message'] = 'Failed to delete reservation.';
+        $_SESSION['error_message'] = 'Failed to delete reservation: ' . $stmt->error;
+        $stmt->close();
+        
+        // Re-enable foreign key checks
+        $conn->query("SET FOREIGN_KEY_CHECKS = 1");
     }
-    
-    $stmt->close();
-    redirect('reservations.php');
 }
 
 // Fetch reservation details
@@ -47,6 +59,26 @@ include 'includes/header.php';
     <div style="margin-bottom: 30px;">
         <a href="reservations.php" class="btn btn-secondary">← Back to Reservations</a>
     </div>
+
+    <?php if (isset($_SESSION['error_message'])): ?>
+        <div class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <?php 
+            echo htmlspecialchars($_SESSION['error_message']); 
+            unset($_SESSION['error_message']);
+            ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($_SESSION['success_message'])): ?>
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            <?php 
+            echo htmlspecialchars($_SESSION['success_message']); 
+            unset($_SESSION['success_message']);
+            ?>
+        </div>
+    <?php endif; ?>
 
     <div class="reservation-details">
         <div class="detail-header">
@@ -99,7 +131,7 @@ include 'includes/header.php';
                 </div>
                 <div class="detail-item">
                     <span class="label">Contact Number:</span>
-                    <span class="value"><?php echo htmlspecialchars($reservation['contact_number']); ?></span>
+                    <span class="value"><?php echo htmlspecialchars($reservation['phone']); ?></span>
                 </div>
                 <div class="detail-item">
                     <span class="label">Address:</span>
@@ -107,7 +139,7 @@ include 'includes/header.php';
                 </div>
                 <div class="detail-item">
                     <span class="label">Number of Adults:</span>
-                    <span class="value"><?php echo $reservation['guest_count']; ?></span>
+                    <span class="value"><?php echo $reservation['num_adults']; ?></span>
                 </div>
                 <div class="detail-item">
                     <span class="label">Number of Kids:</span>
@@ -171,13 +203,30 @@ include 'includes/header.php';
                         <span class="label">Proof of Payment:</span>
                         <div style="margin-top: 10px; width: 100%;">
                             <?php 
-                            // Try multiple possible paths
-                            $possiblePaths = [
-                                '../uploads/payment_proofs/' . $reservation['proof_of_payment'],
-                                '../../uploads/payment_proofs/' . $reservation['proof_of_payment'],
-                                '../public/uploads/payment_proofs/' . $reservation['proof_of_payment'],
-                                'uploads/payment_proofs/' . $reservation['proof_of_payment']
-                            ];
+                            // Check if the proof_of_payment already contains the full path
+                            $proofValue = $reservation['proof_of_payment'];
+                            
+                            // If it already contains 'uploads/', use it as-is, otherwise build the path
+                            if (strpos($proofValue, 'uploads/') === 0) {
+                                // Already has full path from root
+                                $possiblePaths = [
+                                    '../' . $proofValue,
+                                    '../../' . $proofValue,
+                                    $proofValue
+                                ];
+                            } else {
+                                // Just the filename, try multiple possible paths
+                                $possiblePaths = [
+                                    '../uploads/proof_of_payment/' . $proofValue,
+                                    '../../uploads/proof_of_payment/' . $proofValue,
+                                    '../public/uploads/proof_of_payment/' . $proofValue,
+                                    'uploads/proof_of_payment/' . $proofValue,
+                                    '../uploads/payment_proofs/' . $proofValue,
+                                    '../../uploads/payment_proofs/' . $proofValue,
+                                    '../public/uploads/payment_proofs/' . $proofValue,
+                                    'uploads/payment_proofs/' . $proofValue
+                                ];
+                            }
                             
                             $proof_path = null;
                             foreach ($possiblePaths as $path) {
@@ -187,7 +236,7 @@ include 'includes/header.php';
                                 }
                             }
                             
-                            $file_ext = strtolower(pathinfo($reservation['proof_of_payment'], PATHINFO_EXTENSION));
+                            $file_ext = strtolower(pathinfo($proofValue, PATHINFO_EXTENSION));
                             
                             if ($proof_path && file_exists($proof_path)):
                                 if (in_array($file_ext, ['jpg', 'jpeg', 'png', 'gif'])): 
@@ -232,8 +281,16 @@ include 'includes/header.php';
                             else: 
                             ?>
                                 <div style="padding: 15px; background: #fee2e2; border-radius: 8px; color: #991b1b;">
-                                    <p style="margin: 0;"><i class="fas fa-exclamation-triangle"></i> File not found: <?php echo htmlspecialchars($reservation['proof_of_payment']); ?></p>
-                                    <p style="margin: 5px 0 0; font-size: 0.9rem;">Searched in: uploads/payment_proofs/</p>
+                                    <p style="margin: 0;"><i class="fas fa-exclamation-triangle"></i> File not found: <?php echo htmlspecialchars($proofValue); ?></p>
+                                    <p style="margin: 5px 0 0; font-size: 0.9rem;">Looking for file in multiple locations...</p>
+                                    <details style="margin-top: 10px; font-size: 0.85rem;">
+                                        <summary style="cursor: pointer; opacity: 0.8;">Show searched paths</summary>
+                                        <ul style="margin: 5px 0; padding-left: 20px;">
+                                            <?php foreach ($possiblePaths as $path): ?>
+                                                <li><?php echo htmlspecialchars($path); ?></li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    </details>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -428,6 +485,32 @@ function confirmDelete(id) {
 
 .proof-link {
     display: inline-block;
+}
+
+.alert {
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+}
+
+.alert-success {
+    background: #d1fae5;
+    color: #065f46;
+    border: 2px solid #10b981;
+}
+
+.alert-error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 2px solid #ef4444;
+}
+
+.alert i {
+    font-size: 1.2rem;
 }
 </style>
 

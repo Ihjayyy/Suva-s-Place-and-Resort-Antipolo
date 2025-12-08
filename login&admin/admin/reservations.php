@@ -14,49 +14,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     $reservation_id = (int)$_POST['reservation_id'];
     $new_status = sanitize_input($_POST['status']);
     
-    $stmt = $conn->prepare("UPDATE reservations SET status = ? WHERE id = ?");
+    $stmt = $conn->prepare("UPDATE reservations SET status = ?, updated_at = NOW() WHERE id = ?");
     $stmt->bind_param("si", $new_status, $reservation_id);
     
     if ($stmt->execute()) {
         $success = 'Reservation status updated successfully';
-        log_activity($_SESSION['user_id'], 'Update Reservation Status', "Reservation #$reservation_id status changed to $new_status");
+        if (function_exists('log_activity')) {
+            log_activity($_SESSION['user_id'], 'Update Reservation Status', "Reservation #$reservation_id status changed to $new_status");
+        }
     } else {
         $error = 'Failed to update reservation status';
     }
+    $stmt->close();
 }
 
 // Handle delete
 if (isset($_GET['delete']) && isset($_GET['id'])) {
     $reservation_id = (int)$_GET['id'];
     
-    // Start transaction
-    $conn->begin_transaction();
-    
     try {
-        // Get reservation items to restore room inventory
-        $items_stmt = $conn->prepare("SELECT service_id FROM reservation_items WHERE reservation_id = ?");
-        $items_stmt->bind_param("i", $reservation_id);
-        $items_stmt->execute();
-        $items_result = $items_stmt->get_result();
+        // Disable foreign key checks temporarily
+        $conn->query("SET FOREIGN_KEY_CHECKS = 0");
         
-        while ($item = $items_result->fetch_assoc()) {
-            // Restore room inventory
-            $restore_stmt = $conn->prepare("UPDATE room_inventory SET available_rooms = available_rooms + 1 WHERE service_id = ?");
-            $restore_stmt->bind_param("i", $item['service_id']);
-            $restore_stmt->execute();
-        }
-        
-        // Delete reservation (cascade will delete items)
+        // Delete reservation directly (no room_inventory table exists)
         $stmt = $conn->prepare("DELETE FROM reservations WHERE id = ?");
         $stmt->bind_param("i", $reservation_id);
-        $stmt->execute();
         
-        $conn->commit();
+        if ($stmt->execute()) {
+            $success = 'Reservation deleted successfully';
+            if (function_exists('log_activity')) {
+                log_activity($_SESSION['user_id'], 'Delete Reservation', "Deleted reservation #$reservation_id");
+            }
+        } else {
+            $error = 'Failed to delete reservation: ' . $stmt->error;
+        }
         
-        $success = 'Reservation deleted successfully';
-        log_activity($_SESSION['user_id'], 'Delete Reservation', "Deleted reservation #$reservation_id");
+        $stmt->close();
+        
+        // Re-enable foreign key checks
+        $conn->query("SET FOREIGN_KEY_CHECKS = 1");
+        
     } catch (Exception $e) {
-        $conn->rollback();
+        // Re-enable foreign key checks even if error occurs
+        $conn->query("SET FOREIGN_KEY_CHECKS = 1");
         $error = 'Failed to delete reservation: ' . $e->getMessage();
     }
 }
@@ -66,10 +66,9 @@ $status_filter = isset($_GET['status']) ? $_GET['status'] : 'all';
 $search = isset($_GET['search']) ? sanitize_input($_GET['search']) : '';
 $date_filter = isset($_GET['date']) ? sanitize_input($_GET['date']) : '';
 
-// Build query
-$query = "SELECT r.*, u.username, u.email as user_email 
+// Build query - Updated to match actual database schema
+$query = "SELECT r.* 
           FROM reservations r 
-          LEFT JOIN users u ON r.user_id = u.id 
           WHERE 1=1";
 
 if ($status_filter !== 'all') {
@@ -77,11 +76,14 @@ if ($status_filter !== 'all') {
 }
 
 if (!empty($search)) {
-    $query .= " AND (r.full_name LIKE '%$search%' OR r.booking_id LIKE '%$search%' OR r.phone LIKE '%$search%' OR r.email LIKE '%$search%')";
+    $query .= " AND (r.full_name LIKE '%" . $conn->real_escape_string($search) . "%' 
+                OR r.booking_id LIKE '%" . $conn->real_escape_string($search) . "%' 
+                OR r.contact_number LIKE '%" . $conn->real_escape_string($search) . "%' 
+                OR r.email LIKE '%" . $conn->real_escape_string($search) . "%')";
 }
 
 if (!empty($date_filter)) {
-    $query .= " AND r.booking_date = '" . $conn->real_escape_string($date_filter) . "'";
+    $query .= " AND DATE(r.check_in) = '" . $conn->real_escape_string($date_filter) . "'";
 }
 
 $query .= " ORDER BY r.created_at DESC";
@@ -106,9 +108,6 @@ include 'includes/header.php';
 <div class="content-container">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
         <h1>Reservation Management</h1>
-        <a href="reservation_add.php" class="btn btn-primary">
-            <i class="fas fa-plus"></i> New Booking
-        </a>
     </div>
     
     <?php if ($success): ?>
@@ -194,7 +193,7 @@ include 'includes/header.php';
                 
                 <div class="form-group">
                     <label for="date">
-                        <i class="fas fa-calendar"></i> Date
+                        <i class="fas fa-calendar"></i> Check-in Date
                     </label>
                     <input type="date" id="date" name="date" 
                            value="<?php echo htmlspecialchars($date_filter); ?>">
@@ -220,7 +219,7 @@ include 'includes/header.php';
                     <th>Booking ID</th>
                     <th>Customer</th>
                     <th>Contact</th>
-                    <th>Date & Time</th>
+                    <th>Check-in / Check-out</th>
                     <th>Guests</th>
                     <th>Amount</th>
                     <th>Status</th>
@@ -250,17 +249,11 @@ include 'includes/header.php';
                                 <?php echo htmlspecialchars($reservation['phone']); ?>
                             </td>
                             <td>
-                                <strong><?php echo date('M d, Y', strtotime($reservation['booking_date'])); ?></strong>
-                                <br><small>
-                                    <?php 
-                                    $shifts = [
-                                        'day' => 'Day (8AM-4:30PM)',
-                                        'night' => 'Night (8PM-4:30AM)',
-                                        'whole_day' => 'Overnight (2PM-11AM)'
-                                    ];
-                                    echo $shifts[$reservation['shift']] ?? $reservation['shift'];
-                                    ?>
-                                </small>
+                                <strong>Check-in:</strong><br>
+                                <?php echo date('M d, Y h:i A', strtotime($reservation['check_in'])); ?>
+                                <br><br>
+                                <strong>Check-out:</strong><br>
+                                <?php echo date('M d, Y h:i A', strtotime($reservation['check_out'])); ?>
                             </td>
                             <td>
                                 <i class="fas fa-users"></i>
@@ -270,7 +263,7 @@ include 'includes/header.php';
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <strong style="color: #2c5f2d; font-size: 1.1rem;">
+                                <strong style="color: #FFE100; font-size: 1.1rem;">
                                     ₱<?php echo number_format($reservation['total_amount'], 2); ?>
                                 </strong>
                             </td>
@@ -302,7 +295,7 @@ include 'includes/header.php';
                                     </a>
                                     <a href="?delete=1&id=<?php echo $reservation['id']; ?>" 
                                        class="btn btn-sm btn-danger" 
-                                       onclick="return confirm('Are you sure you want to delete this reservation?')"
+                                       onclick="return confirm('Are you sure you want to delete this reservation? This action cannot be undone.')"
                                        title="Delete">
                                         <i class="fas fa-trash"></i>
                                     </a>

@@ -438,7 +438,7 @@ while ($row = $servicesResult->fetch_assoc()) {
                 </form>
             </section>
         </div>
-
+    </div>
         <!----------------------------- FOOTER SECTION -------------------------------->
         <footer class="footer">
             <div class="footer-content">
@@ -466,7 +466,6 @@ while ($row = $servicesResult->fetch_assoc()) {
                 <p>©2025 Suva's Place Resort Antipolo. All rights reserved.</p>
             </div>
         </footer>
-    </div>
 
     <!-- Modals for each accommodation -->
     <?php 

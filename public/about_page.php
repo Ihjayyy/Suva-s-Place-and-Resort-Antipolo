@@ -20,11 +20,13 @@ require_once '../login&admin/config/database.php';
     <script defer src="../public/assets/js/navbar.js"></script>
     <script defer src="../public/assets/js/about_page.js"></script>
     <script defer src="../public/assets/js/user_menu.js"></script>
+    <script defer src="../public/assets/js/script.js"></script>
 </head>
 <body>
 
 <!------------------------ NAVIGATION BAR ------------------------->
 
+<header class="hero">
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
@@ -32,7 +34,7 @@ require_once '../login&admin/config/database.php';
             </div>
 
             <ul class="nav-links" id="nav-links">
-                <li><a href="landing_page.php">Home</a></li>
+                <li><a href="index.php">Home</a></li>
                 <li><a href="about_page.php">About us</a></li>
                 <li><a href="gallery_page.php">Gallery</a></li>
                 <li><a href="contacts_page.php">Contacts</a></li>
@@ -45,7 +47,6 @@ require_once '../login&admin/config/database.php';
                             <i class="fas fa-chevron-down"></i>
                         </a>
                         
-                        <!-- User Dropdown Menu -->
                         <div class="user-dropdown" id="userDropdown">
                             <div class="dropdown-header">
                                 <i class="fas fa-user-circle"></i>
@@ -85,17 +86,16 @@ require_once '../login&admin/config/database.php';
         </div>
     </nav>
 
-  <!------------------------- ABOUT US HERO SECTION --------------------->
-  <section class="hero">
     <div class="hero-content">
-      <h1>About us</h1>
+        <h1>About Us</h1>
+        <p>Suva’s Place Resort is a peaceful escape in the heart of Antipolo City, <br>
+          offering comfort and memorable experiences.</p>
     </div>
-  </section>
+</header>
 
   <!-------------------------- HISTORY SECTION ----------------------------->
-  <section class="history">
+  <section class="history reveal">
     <div class="history-content">
-      <img src="../public/assets/images/about-history-img.png" alt="Founder" class="history-img" />
       <div class="history-text">
         <h2>The Prime mover</h2>
         <p>
@@ -128,8 +128,7 @@ require_once '../login&admin/config/database.php';
 
   <!----------------------- MSV SECTION ----------------------------->
 
-  <section class="mv-section">
-    <div class="mv-bg"></div>
+  <section class="mv-section reveal">
     <div class="mv-container">
       <div class="mv-card">
         <h3>Mission</h3>
@@ -173,7 +172,7 @@ require_once '../login&admin/config/database.php';
         </div>
 
         <nav class="footer-nav">
-            <a href="landing_page.php">Home</a>
+            <a href="index.php">Home</a>
             <a href="about_page.php">About us</a>
             <a href="gallery_page.php">Gallery</a>
             <a href="login_page.php">Login</a>

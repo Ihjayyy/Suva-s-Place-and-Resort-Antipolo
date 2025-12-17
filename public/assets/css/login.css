@@ -29,17 +29,18 @@ body {
 }
 
 .form-title {
-    font-size: 2rem;
+    font-family: var(--font-header);
+    font-size: 3rem;
     color: var(--third-color);
     margin-top: 4.5rem;
     margin-bottom: 10px;
-    font-weight: 700;
 }
 
 .form-subtitle {
-    color: #666;
+    color: var(--third-color);
     margin-bottom: 30px;
-    font-size: 16px;
+    font-size: var(--body-section-size);
+    font-family: var(--font-body);
 }
 
 .input-group {
@@ -52,6 +53,7 @@ body {
     color: var(--third-color);
     font-weight: 500;
     font-size: 14px;
+    font-family: var(--font-body);
 }
 
 .input-group input {
@@ -59,14 +61,14 @@ body {
     padding: 12px 15px;
     border: 2px solid var(--third-color);
     border-radius: 8px;
-    font-size: 1.2rem;
+    font-size: var(--body-section-size);
     transition: all 0.3s ease;
+    font-family: var(--font-body);
 }
 
 .input-group input:focus {
     outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(44, 120, 115, 0.1);
+    border-color: var(--third-color);
 }
 
 .checkbox-group {
@@ -81,6 +83,7 @@ body {
 }
 
 .checkbox-group label {
+    font-family: var(--font-body);
     margin-bottom: 0;
     font-size: 14px;
     color: var(--text-color);
@@ -97,6 +100,7 @@ body {
 }
 
 .btn {
+    font-family: var(--font-body);
     width: 100%;
     padding: 14px;
     border: none;
@@ -120,6 +124,7 @@ body {
 }
 
 .switch-form {
+    font-family: var(--font-body);
     text-align: center;
     margin-top: 20px;
     color: #666;
@@ -188,13 +193,15 @@ body {
 }
 
 .image-content h1 {
-    font-size: 3.5rem;
+    font-family: var(--font-header);
+    font-size: var(--header-section-size);
     margin-bottom: 20px;
     font-weight: 800;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 }
 
 .image-content p {
+    font-family: var(--font-body);
     font-size: 24px;
     font-weight: 300;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.3);

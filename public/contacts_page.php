@@ -57,6 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_inquiry'])) {
     <link rel="icon" type="image/x-icon" href="../public/assets/images/suva's_place_logo.ico">
     <script defer src="../public/assets/js/navbar.js"></script>
     <script defer src="../public/assets/js/user_menu.js"></script>
+    <script defer src="../public/assets/js/script.js"></script>
     
     <style>
         .alert {
@@ -88,6 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_inquiry'])) {
 
 <!------------------------ NAVIGATION BAR ------------------------->
 
+<header class="hero">
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
@@ -95,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_inquiry'])) {
             </div>
 
             <ul class="nav-links" id="nav-links">
-                <li><a href="landing_page.php">Home</a></li>
+                <li><a href="index.php">Home</a></li>
                 <li><a href="about_page.php">About us</a></li>
                 <li><a href="gallery_page.php">Gallery</a></li>
                 <li><a href="contacts_page.php">Contacts</a></li>
@@ -108,7 +110,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_inquiry'])) {
                             <i class="fas fa-chevron-down"></i>
                         </a>
                         
-                        <!-- User Dropdown Menu -->
                         <div class="user-dropdown" id="userDropdown">
                             <div class="dropdown-header">
                                 <i class="fas fa-user-circle"></i>
@@ -148,26 +149,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_inquiry'])) {
         </div>
     </nav>
 
-    
-<section class="hero">
     <div class="hero-content">
-        <h1>Contact us</h1>
+        <h1>Contacts</h1>
+        <p>Get in touch with Suva’s Place Resort for inquiries, reservations, <br> or special requests.</p>
     </div>
-</section>
+</header>
 
-<!----------------CONTACT SECTION---------------------->
+<!---------------- CONTACT SECTION ---------------->
 
-<section class="contact-section">
-<div class="contact-content">
-    <div class="contact-form">
-        <h2>Get in touch</h2>
-        
+<section class="contact-section reveal">
+
+    <!-- TOP: CONTACT FORM -->
+    <div class="contact-form-wrapper">
+        <span class="contact-subtitle">
+            <i class="fa-regular fa-comment-dots"></i> GET IN TOUCH
+        </span>
+        <h2>Leave Us Your Info</h2>
+        <p class="contact-description">
+            Feel free to reach out to us for inquiries, reservations, or concerns.
+        </p>
+
         <?php if (isset($success_message)): ?>
             <div class="alert alert-success">
                 <?php echo htmlspecialchars($success_message); ?>
             </div>
         <?php endif; ?>
-        
+
         <?php if (!empty($errors)): ?>
             <div class="alert alert-error">
                 <strong>Please fix the following errors:</strong>
@@ -178,24 +185,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_inquiry'])) {
                 </ul>
             </div>
         <?php endif; ?>
-        
-        <form action="" method="POST">
-            <input type="text" name="full_name" placeholder="Full name" value="<?php echo htmlspecialchars($full_name ?? ''); ?>" required>
-            <input type="email" name="email" placeholder="Email" value="<?php echo htmlspecialchars($email ?? ''); ?>" required>
-            <textarea name="message" placeholder="Message" required><?php echo htmlspecialchars($message ?? ''); ?></textarea>
-            <button type="submit" name="submit_inquiry">Send</button>
+
+        <form action="" method="POST" class="contact-form-grid">
+            <div class="form-row">
+                <input type="text" name="full_name" placeholder="Full Name"
+                       value="<?php echo htmlspecialchars($full_name ?? ''); ?>" required>
+
+                <input type="email" name="email" placeholder="Email"
+                       value="<?php echo htmlspecialchars($email ?? ''); ?>" required>
+            </div>
+
+            <textarea name="message" placeholder="Comment" required>
+<?php echo htmlspecialchars($message ?? ''); ?>
+            </textarea>
+
+            <button type="submit" name="submit_inquiry" class="btn-submit">
+                SEND YOUR MESSAGE
+            </button>
         </form>
     </div>
 
-    <div class="contact-info">
-        <h2>Information</h2>
-        <div class="info-item"><i class="fa-solid fa-envelope"></i>suvasplaceresortantipolo@gmail.com</div>
-        <div class="info-item"><i class="fa-solid fa-phone"></i>0976 023 3563</div>
-        <div class="info-item"><i class="fa-brands fa-facebook"></i>facebook.com/suvasplaceresortantipolo</div>
-        <iframe src="https://maps.google.com/maps?q=antipolo&t=&z=13&ie=UTF8&iwloc=&output=embed"></iframe>
+    <!-- BOTTOM: MAP + INFO -->
+    <div class="contact-bottom reveal">
+        <div class="map-container">
+            <iframe
+                src="https://maps.google.com/maps?q=antipolo&t=&z=13&ie=UTF8&iwloc=&output=embed"
+                loading="lazy">
+            </iframe>
+        </div>
+
+        <div class="contact-info-box">
+            <span class="info-subtitle">INFORMATION</span>
+            <h3>Connect With Us</h3>
+
+            <div class="info-item">
+                <i class="fa-brands fa-facebook-f"></i>
+                @suvasplaceresortantipolo
+            </div>
+
+            <div class="info-item">
+                <i class="fa-solid fa-phone"></i>
+                0976 023 3563
+            </div>
+
+            <div class="info-item">
+                <i class="fa-solid fa-envelope"></i>
+                suvasplaceresortantipolo@gmail.com
+            </div>
+        </div>
     </div>
-</div>
+
 </section>
+
 
 <!----------------------------- FOOTER SECTION -------------------------------->
 <footer class="footer">
@@ -205,7 +246,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_inquiry'])) {
         </div>
 
         <nav class="footer-nav">
-            <a href="landing_page.php">Home</a>
+            <a href="index.php">Home</a>
             <a href="about_page.php">About us</a>
             <a href="gallery_page.php">Gallery</a>
             <a href="login_page.php">Login</a>

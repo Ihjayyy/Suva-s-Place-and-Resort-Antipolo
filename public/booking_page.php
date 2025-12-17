@@ -41,6 +41,8 @@ while ($row = $servicesResult->fetch_assoc()) {
 <body>
 
     <!------------------------ NAVIGATION BAR ------------------------->
+
+<header class="hero">
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
@@ -48,25 +50,25 @@ while ($row = $servicesResult->fetch_assoc()) {
             </div>
 
             <ul class="nav-links" id="nav-links">
-                <li><a href="landing_page.php">Home</a></li>
+                <li><a href="index.php">Home</a></li>
                 <li><a href="about_page.php">About us</a></li>
                 <li><a href="gallery_page.php">Gallery</a></li>
                 <li><a href="contacts_page.php">Contacts</a></li>
-
-                <?php if (is_logged_in()): ?>
+                
+                <?php if(is_logged_in()): ?>
                     <li class="user-menu-container">
                         <a href="#" class="user-button" id="userMenuBtn">
-                            <i class="fas fa-user-circle"></i>
+                            <i class="fas fa-user-circle"></i> 
                             <?php echo htmlspecialchars($_SESSION['username']); ?>
                             <i class="fas fa-chevron-down"></i>
                         </a>
-
+                        
                         <div class="user-dropdown" id="userDropdown">
                             <div class="dropdown-header">
                                 <i class="fas fa-user-circle"></i>
                                 <div>
                                     <p class="user-name"><?php echo htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username']); ?></p>
-                                    <p class="user-email"><?php echo htmlspecialchars($_SESSION['email'] ?? $_SESSION['username']); ?></p>
+                                    <p class="user-email"><?php echo htmlspecialchars($_SESSION['username']); ?></p>
                                 </div>
                             </div>
                             <div class="dropdown-divider"></div>
@@ -79,28 +81,34 @@ while ($row = $servicesResult->fetch_assoc()) {
                             <a href="help_support.php" class="dropdown-item">
                                 <i class="fas fa-question-circle"></i> Help & Support
                             </a>
+                            <a href="terms.php" class="dropdown-item">
+                                <i class="fas fa-file-contract"></i> Terms and Conditions
+                            </a>
                             <div class="dropdown-divider"></div>
                             <a href="../login&admin/logout.php" class="dropdown-item logout">
                                 <i class="fas fa-sign-out-alt"></i> Logout
                             </a>
                         </div>
                     </li>
+                <?php else: ?>
+                    <li><a href="../login&admin/login.php" class="login-button"><i class="fas fa-user"></i> Login</a></li>
                 <?php endif; ?>
             </ul>
 
             <div class="burger" id="burger">
-                <i class="fas fa-bars" id="open-icon"></i>
-                <i class="fas fa-arrow-left" id="close-icon"></i>
+                  <i class="fas fa-bars" id="open-icon"></i>
+                  <i class="fas fa-arrow-left" id="close-icon"></i>
             </div>
         </div>
     </nav>
 
+    <div class="hero-content">
+        <h1>Book Now</h1>
+        <p>Reserve your stay and create unforgettable moments at Suva's Place Resort.</p>
+    </div>
+</header>
+
     <!------------------------- BOOK NOW HERO SECTION --------------------->
-    <section class="hero">
-        <div class="hero-content">
-            <h1>Book now</h1>
-        </div>
-    </section>
 
     <div class="page-wrapper">
         <header class="header">

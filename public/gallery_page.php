@@ -18,12 +18,15 @@ require_once '../login&admin/config/database.php';
     <link rel="icon" type="image/x-icon" href="../public/assets/images/suva's_place_logo.ico">
     <script defer src="../public/assets/js/navbar.js"></script>
     <script defer src="../public/assets/js/user_menu.js"></script>
+    <script defer src="../public/assets/js/gallery_page.js"></script>
+    <script defer src="../public/assets/js/script.js"></script>
 </head>
 
 <body>
 
 <!------------------------ NAVIGATION BAR ------------------------->
   
+<header class="hero">
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
@@ -31,7 +34,7 @@ require_once '../login&admin/config/database.php';
             </div>
 
             <ul class="nav-links" id="nav-links">
-                <li><a href="landing_page.php">Home</a></li>
+                <li><a href="index.php">Home</a></li>
                 <li><a href="about_page.php">About us</a></li>
                 <li><a href="gallery_page.php">Gallery</a></li>
                 <li><a href="contacts_page.php">Contacts</a></li>
@@ -44,7 +47,6 @@ require_once '../login&admin/config/database.php';
                             <i class="fas fa-chevron-down"></i>
                         </a>
                         
-                        <!-- User Dropdown Menu -->
                         <div class="user-dropdown" id="userDropdown">
                             <div class="dropdown-header">
                                 <i class="fas fa-user-circle"></i>
@@ -84,30 +86,62 @@ require_once '../login&admin/config/database.php';
         </div>
     </nav>
 
+    <div class="hero-content">
+        <h1>Gallery</h1>
+        <p>Explore moments and spaces that make every stay unforgettable.</p>
+    </div>
+</header>
 
-    <section class="hero">
-        <div class="hero-content">
-            <h1>Gallery</h1>
-        </div>
-    </section>
 
-    <div class="filters">
-        <button>All</button>
-        <button>Facilities</button>
-        <button>Rooms</button>
+<section class="highlights reveal">
+  <div class="highlight-carousel">
+    <button class="carousel-btn prev">&#10094;</button>
+
+    <div class="highlight-track">
+      <div class="highlight-card"><img src="../public/assets/images/img1.jpg"/></div>
+      <div class="highlight-card"><img src="../public/assets/images/img2.jpg"/></div>
+      <div class="highlight-card"><img src="../public/assets/images/img3.jpg"/></div>
     </div>
 
-    <section class="gallery-section">
-        <img src="../public/assets/images/img1.jpg" alt="image1">
-        <img src="../public/assets/images/img2.jpg" alt="image2">
-        <img src="../public/assets/images/img3.jpg" alt="image3">
-        <img src="../public/assets/images/img4.jpg" alt="image4">
-        <img src="../public/assets/images/img5.jpg" alt="image5">
-        <img src="../public/assets/images/img6.jpg" alt="image6">
-        <img src="../public/assets/images/img7.jpg" alt="image7">
-        <img src="../public/assets/images/img8.jpg" alt="image8">
-        <img src="../public/assets/images/img9.jpg" alt="image9">
-    </section>
+    <button class="carousel-btn next">&#10095;</button>
+  </div>
+
+  <h2 class="section-title">Highlights</h2>
+  <p class="section-desc">
+    Discover the features that make every stay at Suva's Place Resort relaxing, comfortable, and truly memorable.
+  </p>
+
+</section>
+
+
+
+<section class="facilities reveal">
+  <h2 class="section-title">Facilities</h2>
+
+  <div class="facilities-slider">
+    <div class="facilities-track">
+      <img src="../public/assets/images/img4.jpg"/>
+      <img src="../public/assets/images/img5.jpg"/>
+      <img src="../public/assets/images/img6.jpg"/>
+      <img src="../public/assets/images/img7.jpg"/>
+      <img src="../public/assets/images/img8.jpg"/>
+      <img src="../public/assets/images/img9.jpg"/>
+    </div>
+  </div>
+
+  <div class="facilities-controls">
+    <button id="facPrev">&#10094;</button>
+    <div class="dots"></div>
+    <button id="facNext">&#10095;</button>
+  </div>
+</section>
+
+
+
+
+
+
+
 
 
 <!----------------------------- FOOTER SECTION -------------------------------->
@@ -119,7 +153,7 @@ require_once '../login&admin/config/database.php';
         </div>
 
         <nav class="footer-nav">
-            <a href="../client_side/landing_page.php">Home</a>
+            <a href="../client_side/index.php">Home</a>
             <a href="../client_side/about_page.php">About us</a>
             <a href="../client_side/gallery_page.php">Gallery</a>
             <a href="../client_side/login_page.php">Login</a>

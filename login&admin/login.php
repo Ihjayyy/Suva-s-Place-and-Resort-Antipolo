@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($user['user_type'] === 'admin') {
                     redirect('admin/dashboard.php');
                 } else {
-                    redirect('../public/landing_page.php');
+                    redirect('../public/index.php');
                 }
                 exit;
             } else {
@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <ul class="nav-links" id="nav-links">
-                <li><a href="../public/landing_page.php">Home</a></li>
+                <li><a href="../public/index.php">Home</a></li>
                 <li><a href="../public/about_page.php">About us</a></li>
                 <li><a href="../public/gallery_page.php">Gallery</a></li>
                 <li><a href="../public/contacts_page.php">Contacts</a></li>

@@ -1,80 +1,213 @@
 .hero {
+  height: 100vh;
   position: relative;
-  height: 60vh;
-  background: url("../images/gallery-header.png") center/cover no-repeat;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   color: var(--first-color);
-  border-radius: 0px 0px 300px 300px;
+  display: flex;
+  flex-direction: column;
 }
 
 .hero::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 0px 0px 300px 300px;
-}
-
-.hero-content {
-  position: relative;
+  background: url('../images/gallery-header.png') no-repeat center center / cover;
+  transform: scale(1.1) translateY(40px);
+  opacity: 0;
+  transition: transform 1.5s ease, opacity 1.5s ease;
   z-index: 1;
 }
 
-.hero h1 {
-  font-size: 5rem;
-  font-weight: 600;
+.hero.animate::before {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.hero-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+  z-index: 5;
+  position: relative;
+}
+
+.hero-content h1 {
+  font-family: var(--font-header);
+  margin-top: 4rem;
+  font-size: var(--hero-header-size);
+  line-height: 1.2;
+}
+
+.hero-content span {
+  font-weight: bold;
+}
+
+.hero-content p {
+  font-family: var(--font-body);
+  margin: 1rem 0;
+  font-size: 1.2rem;
 }
 
 
-.filters{
+.hero-content h1,
+.hero-content p{
+  opacity: 0;
+  transform: translateY(40px);
+}
+
+
+.hero.animate .hero-content h1 {
+  animation: heroTextFade 1s ease forwards;
+  animation-delay: 0.6s;
+}
+
+.hero.animate .hero-content p {
+  animation: heroTextFade 1s ease forwards;
+  animation-delay: 0.9s;
+}
+
+@keyframes heroTextFade {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+
+.highlights {
+  min-height: 100vh;
+  padding: 6rem 2rem;
+  text-align: center;
+}
+
+.section-title {
+  font-family: var(--font-header);
+  font-size: var(--header-section-size);
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.section-desc {
+  line-height: 35px;
+  font-size: var(--body-section-size);
+  font-family: var(--font-body);
+  max-width: 600px;
+  margin: 0 auto 4rem;
+  opacity: 0.8;
+}
+
+.highlight-carousel {
+  position: relative;
   display: flex;
-  gap: 15px;
-  margin: 5rem 0;
+  align-items: center;
   justify-content: center;
 }
 
-.filters button{
-  font-weight: 500;
-  background: var(--second-color);
-  border: none;
-  color: var(--third-color);
-  font-weight: 500;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: 0.3s ease;
+.highlight-track {
+  display: flex;
+  gap: 2rem;
+  transition: transform 0.6s ease;
 }
 
-.filters button:hover{
-  background: var(--third-color);
-  color: var(--second-color);
+.highlight-card {
+  width: 350px;
+  height: 550px;
+  border-radius: 12px;
+  overflow: hidden;
+  transform: scale(0.85);
+  opacity: 0.6;
+  transition: transform 0.6s ease, opacity 0.6s ease;
 }
 
-.gallery-section{
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 40px;
-  padding: 0 10rem 10rem;
-  background-image: url(../images/gallery-bg.png);
-  background-size: cover;
+.highlight-card.active {
+  transform: scale(1);
+  opacity: 1;
 }
 
-.gallery-section img{
+.highlight-card img {
   width: 100%;
-  height: 250px;
+  height: 100%;
   object-fit: cover;
-  border-radius: 15px;
+}
+
+.carousel-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  margin: 0 3rem;
 }
 
 
-@media (max-width: 768px) {
-  .filters{
-    flex-wrap: wrap;
-  }
+.facilities {
+  min-height: 100vh;
+  padding: 6rem 2rem;
+  text-align: left;
+}
 
-  .gallery-section {
-    padding: 0 1rem 3rem;
-  }
+.facilities-slider {
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.facilities-track {
+  display: flex;
+  transition: transform 0.6s ease;
+}
+
+.facilities-track img {
+  width: 400px;
+  height: 300px;
+  object-fit: cover;
+  margin-right: 1.5rem;
+  border-radius: 8px;
+}
+
+.facilities-controls {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.facilities-controls button {
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.dots {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ccc;
+}
+
+.dots span.active {
+  background: #333;
+}
+
+
+
+
+.reveal {
+  opacity: 0;
+  transform: translateY(60px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
 }

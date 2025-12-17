@@ -1,32 +1,86 @@
-
 .hero {
+  height: 100vh;
   position: relative;
-  height: 60vh;
-  background: url("../images/about-header.png") center/cover no-repeat;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   color: var(--first-color);
-  border-radius: 0px 0px 300px 300px;
+  display: flex;
+  flex-direction: column;
 }
 
 .hero::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 0px 0px 300px 300px;
-}
-
-.hero-content {
-  position: relative;
+  background: url('../images/ABOUT\ US\ BG.png') no-repeat center center / cover;
+  transform: scale(1.1) translateY(40px);
+  opacity: 0;
+  transition: transform 1.5s ease, opacity 1.5s ease;
   z-index: 1;
 }
 
-.hero h1 {
-  font-size: 5rem;
-  font-weight: 600;
+.hero.animate::before {
+  transform: scale(1) translateY(0);
+  opacity: 1;
 }
+
+.hero-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+  z-index: 5;
+  position: relative;
+}
+
+.hero-content h1 {
+  font-family: var(--font-header);
+  margin-top: 4rem;
+  font-size: var(--hero-header-size);
+  line-height: 1.2;
+}
+
+.hero-content span {
+  font-weight: bold;
+}
+
+.hero-content p {
+  font-family: var(--font-body);
+  margin: 1rem 0;
+  font-size: 1.2rem;
+}
+
+
+.hero-content h1,
+.hero-content p{
+  opacity: 0;
+  transform: translateY(40px);
+}
+
+
+.hero.animate .hero-content h1 {
+  animation: heroTextFade 1s ease forwards;
+  animation-delay: 0.6s;
+}
+
+.hero.animate .hero-content p {
+  animation: heroTextFade 1s ease forwards;
+  animation-delay: 0.9s;
+}
+
+@keyframes heroTextFade {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+
+
+
+
 
 .history {
   padding: 80px 10%;
@@ -41,10 +95,6 @@
   flex-wrap: wrap;
 }
 
-.history-img {
-  width: 300px;
-  border-radius: 20px;
-}
 
 .history-text {
   flex: 1;
@@ -52,12 +102,15 @@
 }
 
 .history-text h2 {
-  font-size: 2.5rem;
+  font-size: var(--header-section-size);
+  font-family: var(--font-header);
   color: var(--third-color);
   margin-bottom: 1rem;
 }
 
 .history-text p {
+  font-family: var(--font-body);
+  font-size: var(--body-section-size);
   text-align: justify;
   font-weight: 500;
   margin-bottom: 1rem;
@@ -65,6 +118,8 @@
 }
 
 .btn-learn {
+  font-size: var(--body-section-size);
+  font-family: var(--font-body);
   background: var(--third-color);
   color: var(--first-color);
   border: none;
@@ -87,12 +142,15 @@
 }
 
 .extra-text h2 {
-  font-size: 2.5rem;
+  font-family: var(--font-header);
+  font-size: var(--header-section-size);
   color: var(--third-color);
   margin-bottom: 1rem;
 }
 
 .extra-text p {
+  font-family: var(--font-body);
+  font-size: var(--body-section-size);
   text-align: justify;
   font-weight: 500;
   color: var(--third-color);
@@ -118,12 +176,6 @@
   overflow: hidden;
 }
 
-.mv-section .mv-bg {
-  position: absolute;
-  inset: 0;
-  background: url("../images/about-section-img.png") center/cover no-repeat;
-  z-index: 0;
-}
 
 .mv-container {
   display: grid;
@@ -157,4 +209,17 @@
   font-size: 1rem;
   list-style: disc inside;
   line-height: 1.8;
+}
+
+
+
+.reveal {
+  opacity: 0;
+  transform: translateY(60px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
 }

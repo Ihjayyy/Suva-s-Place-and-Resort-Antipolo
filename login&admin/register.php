@@ -2,16 +2,17 @@
 // register.php
 require_once 'config/database.php';
 
-// Redirect if already logged in
+// REDIRECT USER IF ALREADY LOGGED IN
 if (is_logged_in()) {
     if (is_admin()) {
         redirect('admin/dashboard.php');
     } else {
-        redirect('../public/landing_page.php');
+        redirect('../public/index.php');
     }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
     // Get and sanitize input
     $username = sanitize_input($_POST['username']);
     $email = sanitize_input($_POST['email']);
@@ -42,8 +43,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$terms) {
         $errors[] = 'You must agree to the Terms and Conditions';
     }
+
     
-    // Check if username already exists
+    // CHECK IF THE USERNAME IS ALREADY EXISTS
     if (empty($errors)) {
         $stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
         $stmt->bind_param("s", $username);
@@ -56,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
     }
     
-    // Check if email already exists
+    // CHECK IF EMAIL IS ALREADY EXISTS
     if (empty($errors)) {
         $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);

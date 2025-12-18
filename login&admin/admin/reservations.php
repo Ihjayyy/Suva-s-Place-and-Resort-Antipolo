@@ -1,6 +1,7 @@
 <?php
 // admin/reservations.php
 require_once '../config/database.php';
+require '../config/email_function.php';
 
 if (!is_logged_in() || !is_admin()) {
     redirect('../login.php');
@@ -18,15 +19,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     $stmt->bind_param("si", $new_status, $reservation_id);
     
     if ($stmt->execute()) {
+        // Fetch user info
+        $userStmt = $conn->prepare("SELECT full_name, email FROM reservations WHERE id = ?");
+        $userStmt->bind_param("i", $reservation_id);
+        $userStmt->execute();
+        $userResult = $userStmt->get_result();
+        
+        if ($userRow = $userResult->fetch_assoc()) {
+            $fullName = $userRow['full_name'];
+            $email = $userRow['email'];
+
+            // Send status update email
+            sendStatusUpdateEmail($email, $fullName, $reservation_id, $new_status);
+        }
+
+        $userStmt->close();
+
         $success = 'Reservation status updated successfully';
         if (function_exists('log_activity')) {
             log_activity($_SESSION['user_id'], 'Update Reservation Status', "Reservation #$reservation_id status changed to $new_status");
         }
-    } else {
-        $error = 'Failed to update reservation status';
     }
+
     $stmt->close();
 }
+
 
 // Handle delete
 if (isset($_GET['delete']) && isset($_GET['id'])) {

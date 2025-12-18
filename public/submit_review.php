@@ -41,8 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     $stmt->close();
-    redirect('landing_page.php');
+    redirect('index.php');
 } else {
-    redirect('landing_page.php');
+    redirect('index.php');
 }
 ?>

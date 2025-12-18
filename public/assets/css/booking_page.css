@@ -11,11 +11,26 @@ body {
 
 .hero {
   height: 100vh;
-  background: url('../images/booking-header.png') no-repeat center center/cover;
   position: relative;
   color: var(--first-color);
   display: flex;
   flex-direction: column;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url('../images/booking-header.png') no-repeat center center / cover;
+  transform: scale(1.1) translateY(40px);
+  opacity: 0;
+  transition: transform 1.5s ease, opacity 1.5s ease;
+  z-index: 1;
+}
+
+.hero.animate::before {
+  transform: scale(1) translateY(0);
+  opacity: 1;
 }
 
 .hero-content {
@@ -27,6 +42,7 @@ body {
   text-align: center;
   padding: 2rem;
   z-index: 5;
+  position: relative;
 }
 
 .hero-content h1 {
@@ -41,11 +57,38 @@ body {
 }
 
 .hero-content p {
-  line-height: 30px;
   font-family: var(--font-body);
   margin: 1rem 0;
-  font-size: var(--hero-body-size);
+  font-size: 1.2rem;
 }
+
+
+.hero-content h1,
+.hero-content p{
+  opacity: 0;
+  transform: translateY(40px);
+}
+
+
+.hero.animate .hero-content h1 {
+  animation: heroTextFade 1s ease forwards;
+  animation-delay: 0.6s;
+}
+
+.hero.animate .hero-content p {
+  animation: heroTextFade 1s ease forwards;
+  animation-delay: 0.9s;
+}
+
+@keyframes heroTextFade {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+
 
 .page-wrapper {
     max-width: 1400px;
@@ -65,13 +108,15 @@ body {
 }
 
 .resort-title {
-    font-size: 3rem;
+    font-family: var(--font-header);
+    font-size: var(--header-section-size);
     color: var(--third-color);
     margin-bottom: 10px;
     letter-spacing: 1px;
 }
 
 .resort-subtitle {
+    font-family: var(--font-body);
     font-size: 1.2rem;
     color: var(--third-color);
     font-weight: 500;
@@ -79,6 +124,7 @@ body {
 }
 
 .section-title {
+    font-family: var(--font-header);
     font-size: 2.2rem;
     color: var(--third-color);
     margin-bottom: 25px;
@@ -88,6 +134,7 @@ body {
 }
 
 .section-subtitle {
+    font-family: var(--font-body);
     font-size: 1.1rem;
     color: var(--third-color);
     margin-bottom: 30px;
@@ -1005,5 +1052,131 @@ textarea:focus {
     .selected-item-body {
         flex-direction: column;
         gap: 10px;
+    }
+}
+
+
+
+/* ============================= */
+/* BOOKING SECTION UI REFINEMENT */
+/* ============================= */
+
+/* Improve overall booking spacing */
+.booking-container {
+    align-items: flex-start;
+}
+
+/* Section visual consistency */
+.accommodation-section,
+.form-section {
+    background: var(--first-color);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Section titles cleaner */
+.section-title {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* Gallery cards refinement */
+.gallery-card {
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.gallery-info {
+    padding: 18px;
+}
+
+.gallery-info h4 {
+    font-size: 1.25rem;
+}
+
+/* Selected items panel emphasis */
+.selected-items {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 225, 0, 0.15),
+        rgba(255, 225, 0, 0.05)
+    );
+}
+
+/* Selected item cards more premium */
+.selected-item-card {
+    border-radius: 14px;
+    transition: transform 0.3s ease;
+}
+
+.selected-item-card:hover {
+    transform: translateY(-3px);
+}
+
+/* Total amount highlight */
+.total-display {
+    border-radius: 18px;
+    position: sticky;
+    bottom: 20px;
+}
+
+/* Form group clarity */
+.form-section-group {
+    background: rgba(255, 225, 0, 0.07);
+    border-radius: 14px;
+}
+
+/* Inputs cleaner & modern */
+input,
+select,
+textarea {
+    background: #fff;
+}
+
+/* Payment option card feel */
+.payment-option {
+    border-radius: 14px;
+    background: #fff;
+}
+
+.payment-option.active {
+    box-shadow: 0 8px 20px rgba(255, 225, 0, 0.25);
+}
+
+/* Submit button emphasis */
+.submit-btn {
+    border-radius: 18px;
+    font-size: 1.25rem;
+    text-transform: uppercase;
+}
+
+/* Modal polish */
+.modal-content {
+    border-radius: 18px;
+}
+
+.modal-header {
+    border-radius: 18px 18px 0 0;
+}
+
+/* Booking policy visual separation */
+.booking-policy {
+    border-radius: 14px;
+}
+
+/* Mobile refinement */
+@media (max-width: 768px) {
+    .booking-container {
+        gap: 25px;
+    }
+
+    .total-display {
+        position: relative;
+        bottom: unset;
+    }
+
+    .submit-btn {
+        font-size: 1.1rem;
     }
 }

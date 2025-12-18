@@ -87,6 +87,7 @@
 .section-title {
   font-family: var(--font-header);
   font-size: var(--header-section-size);
+  color: var(--third-color);
   margin-top: 2rem;
   margin-bottom: 1rem;
 }
@@ -97,7 +98,7 @@
   font-family: var(--font-body);
   max-width: 600px;
   margin: 0 auto 4rem;
-  opacity: 0.8;
+  color: var(--third-color);
 }
 
 .highlight-carousel {

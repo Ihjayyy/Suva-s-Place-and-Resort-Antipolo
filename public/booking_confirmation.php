@@ -402,7 +402,7 @@ $items = $itemsStmt->get_result();
             <button onclick="window.print()" class="btn btn-secondary">
                 <i class="fas fa-print"></i> Print Confirmation
             </button>
-            <a href="landing_page.php" class="btn btn-primary">
+            <a href="index.php" class="btn btn-primary">
                 <i class="fas fa-home"></i> Back to Home
             </a>
         </div>

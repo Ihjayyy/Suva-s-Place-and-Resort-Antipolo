@@ -114,28 +114,39 @@ $reviews_result = $conn->query($reviews_query);
   </div>
 
   <div class="packages-container">
-    <div class="package-card">
-      <img src="../public/assets/images/packages_day&night.png" alt="Day & Night Rates">
-      <div class="package-overlay">
-        <h3>DAY & NIGHT RATES</h3>
-      </div>
-    </div>
 
+    <!-- PACKAGE A -->
     <div class="package-card">
       <img src="../public/assets/images/packages_packageA.png" alt="Package A">
-      <div class="package-overlay">
-        <h3>PACKAGE A</h3>
+
+      <div class="package-content">
+        <h3>Package A</h3>
+        <p class="capacity">
+          <span class="icon">👥</span> 30 – 100
+        </p>
+
+        <a href="package-a.html" class="book-btn">Book Now</a>
       </div>
     </div>
 
+    <!-- PACKAGE B -->
     <div class="package-card">
       <img src="../public/assets/images/packages_packageB.png" alt="Package B">
-      <div class="package-overlay">
-        <h3>PACKAGE B</h3>
+
+      <div class="package-content">
+        <h3>Package B</h3>
+        <p class="capacity">
+          <span class="icon"></span> 100 – 200
+        </p>
+
+        <a href="package-b.html" class="book-btn">Book Now</a>
       </div>
     </div>
+
   </div>
 </section>
+
+
 
 <!--------------------- REVIEWS SECTION ------------------------>
 <section class="reviews reveal">

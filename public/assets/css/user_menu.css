@@ -125,6 +125,7 @@
 }
 
 .btn-add-review {
+    font-family: var(--font-body);
     padding: 12px 30px;
     background: var(--third-color);
     color: white;
@@ -204,6 +205,7 @@
 }
 
 .modal-content h3 {
+    font-family: var(--font-header);
     margin-top: 0;
     color: #333;
     font-size: 24px;
@@ -217,8 +219,9 @@
 .rating-input label {
     display: block;
     margin-bottom: 10px;
-    color: #333;
+    color: var(--third-color);
     font-weight: 500;
+    font-family: var(--font-body);
 }
 
 .star-rating {
@@ -250,6 +253,7 @@
 }
 
 .form-group label {
+    font-family: var(--font-body);
     display: block;
     margin-bottom: 8px;
     color: var(--third-color);
@@ -265,7 +269,7 @@
     padding: 12px;
     border: 1px solid #ddd;
     border-radius: 8px;
-    font-family: inherit;
+    font-family: var(--font-body);
     font-size: 14px;
     resize: vertical;
     transition: border-color 0.3s;
@@ -277,6 +281,7 @@
 }
 
 .btn-primary {
+    font-family: var(--font-body);
     width: 100%;
     padding: 12px;
     background: var(--third-color);

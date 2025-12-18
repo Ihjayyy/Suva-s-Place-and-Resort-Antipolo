@@ -13,6 +13,7 @@
         <!--------- SIDE BAR--------- -->
         <aside class="sidebar">
             <div class="sidebar-header">
+                <img src="" alt="">
                 <h2>Suva's Place And Resort Antipolo</h2>
                 <p><?php echo htmlspecialchars($_SESSION['full_name']); ?></p>
             </div>

@@ -36,6 +36,7 @@ while ($row = $servicesResult->fetch_assoc()) {
     <script defer src="../public/assets/js/navbar.js"></script>
     <script defer src="../public/assets/js/booking_page.js"></script>
     <script defer src="../public/assets/js/user_menu.js"></script>
+    <script defer src="../public/assets/js/script.js"></script>
 </head>
 
 <body>
@@ -455,7 +456,7 @@ while ($row = $servicesResult->fetch_assoc()) {
                 </div>
 
                 <nav class="footer-nav">
-                    <a href="landing_page.php">Home</a>
+                    <a href="index.php">Home</a>
                     <a href="about_page.php">About us</a>
                     <a href="gallery_page.php">Gallery</a>
                     <a href="booking_page.php">Book Now</a>

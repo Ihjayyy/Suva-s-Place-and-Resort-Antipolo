@@ -48,7 +48,8 @@
 .hero-content p {
   font-family: var(--font-body);
   margin: 1rem 0;
-  font-size: 1.2rem;
+  font-size: var(--hero-body-size);
+  line-height: 40px;
 }
 
 
@@ -174,12 +175,13 @@
   background-color: var(--first-color);
   padding: 80px 10%;
   overflow: hidden;
+  margin-bottom: 5rem;
 }
 
 
 .mv-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
   gap: 30px;
   position: relative;
   z-index: 1;
@@ -188,24 +190,26 @@
 .mv-card {
   background-color: var(--third-color);
   color: var(--first-color);
-  padding: 25px;
+  padding: 40px;
   border-radius: 15px;
-  border: 2px solid #e6c766;
 }
 
 .mv-card h3 {
   font-size: 2rem;
+  font-family: var(--font-header);
   margin-bottom: 15px;
   color: var(--first-color);
 }
 
 .mv-card p {
+  font-family: var(--font-body);
   text-align: justify;
   font-size: 1rem;
   line-height: 30px;
 }
 
 .mv-card ul {
+  font-family: var(--font-body);
   font-size: 1rem;
   list-style: disc inside;
   line-height: 1.8;
